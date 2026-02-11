@@ -1,4 +1,4 @@
-# fit2
+# FitBro
 
 A progressive web app (PWA) for strength training - inspired by TechnoGym.
 
@@ -10,7 +10,8 @@ A progressive web app (PWA) for strength training - inspired by TechnoGym.
 
 ### Workout Planning
 - **Create workout plans** with custom names (PUSH, LEG DAY, etc.)
-- **100+ exercises** across all muscle groups
+- **150+ exercises** across all muscle groups
+- **Exercise autocomplete** - suggestions appear as you type
 - **Filter by muscle**: Chest, Back, Legs, Shoulders, Arms, Core
 - **Filter by equipment**: Barbell, Dumbbell, Cable, Machine, Bodyweight
 
@@ -23,6 +24,7 @@ A progressive web app (PWA) for strength training - inspired by TechnoGym.
 - **Core**: Planks, Crunches, Leg Raises, Cable Crunches (15+ exercises)
 
 ### Workout Execution
+- **Edit workout plans** - DONE button saves changes
 - **Log sets** with weight and reps
 - **Track progress** during workout
 - **Complete workouts** and save to history
@@ -38,6 +40,13 @@ A progressive web app (PWA) for strength training - inspired by TechnoGym.
 - **Bottom navigation**
 - **Bottom sheet modals**
 - **Muscle badges** showing targeted areas
+- **PWA** - Install on Android for full-screen experience
+
+## Install on Android
+
+1. Open https://ntvibe.github.io/fit2/app/ in Chrome
+2. Tap **Menu** (⋮) → **Add to Home Screen**
+3. The app will install and work offline
 
 ## Tech Stack
 

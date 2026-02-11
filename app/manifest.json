@@ -1,12 +1,14 @@
 {
-    "name": "Fit2 - Workout Planner",
-    "short_name": "Fit2",
-    "description": "Simple workout planner with local storage",
-    "start_url": "/",
+    "name": "FitBro",
+    "short_name": "FitBro",
+    "description": "Strength Training Tracker",
+    "start_url": "/fit2/app/",
+    "scope": "/fit2/app/",
     "display": "standalone",
-    "background_color": "#f8fafc",
-    "theme_color": "#2563eb",
+    "background_color": "#000000",
+    "theme_color": "#FFD700",
     "orientation": "portrait-primary",
+    "start_url": "/fit2/app/",
     "icons": [
         {
             "src": "icon-192.svg",

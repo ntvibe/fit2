@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#000000">
-    <meta name="description" content="Fit2 - Workout Tracker">
+    <meta name="description" content="FitBro - Strength Training Tracker">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
-    <title>Fit2 - Workout Tracker</title>
+    <title>FitBro</title>
     <style>
         * {
             margin: 0;
@@ -489,6 +489,7 @@
             gap: 0.5rem;
             margin-bottom: 0.5rem;
             align-items: center;
+            position: relative;
         }
         
         .exercise-input-row input[type="text"] {
@@ -508,6 +509,52 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
+        }
+        
+        /* Suggestions Dropdown */
+        .suggestions-dropdown {
+            position: absolute;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 300;
+            width: calc(100% - 140px);
+            left: 0;
+            top: 100%;
+            margin-top: 0.25rem;
+        }
+        
+        .suggestion-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .suggestion-item:hover, .suggestion-item.selected {
+            background: var(--card-hover);
+        }
+        
+        .suggestion-item .muscle-tag {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            background: var(--bg);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .suggestion-item .machine-tag {
+            font-size: 0.65rem;
+            color: var(--primary);
+            margin-left: 0.5rem;
         }
         
         /* Set Input */
@@ -608,7 +655,7 @@
     <!-- Home Screen -->
     <div id="home-screen">
         <header>
-            <div class="header-title">🏋️ Fit2</div>
+            <div class="header-title">🏋️ FitBro</div>
             <div class="header-subtitle" id="current-date"></div>
         </header>
         
@@ -673,7 +720,7 @@
                         </div>
                     </div>
                 </div>
-                <button class="done-btn" onclick="completeWorkout()">DONE</button>
+                <button class="done-btn" onclick="saveWorkoutEdits()">DONE</button>
             </div>
             
             <div class="section-title">Exercise List</div>
@@ -703,10 +750,11 @@
                     <label>Add Exercises</label>
                     <div id="exercise-inputs">
                         <div class="exercise-input-row">
-                            <input type="text" name="exercise[]" placeholder="Exercise name" required>
+                            <input type="text" name="exercise[]" placeholder="Exercise name" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" onblur="hideSuggestionsDelayed(this)" required>
                             <input type="number" name="sets[]" placeholder="Sets" value="3" required>
                             <input type="number" name="reps[]" placeholder="Reps" value="10" required>
                             <button type="button" class="btn-remove" onclick="this.parentElement.remove()">✕</button>
+                            <div class="suggestions-dropdown" style="display:none;"></div>
                         </div>
                     </div>
                     <button type="button" class="btn btn-secondary" onclick="addExerciseField()" style="width: 100%; margin-top: 0.5rem;">
@@ -1073,8 +1121,8 @@
         
         // Load data
         function loadData() {
-            workouts = JSON.parse(localStorage.getItem('fit2-workouts') || '[]');
-            history = JSON.parse(localStorage.getItem('fit2-history') || '[]');
+            workouts = JSON.parse(localStorage.getItem('fitbro-workouts') || '[]');
+            history = JSON.parse(localStorage.getItem('fitbro-history') || '[]');
             
             const dateEl = document.getElementById('current-date');
             const options = { weekday: 'long', month: 'short', day: 'numeric' };
@@ -1086,8 +1134,8 @@
         
         // Save data
         function saveData() {
-            localStorage.setItem('fit2-workouts', JSON.stringify(workouts));
-            localStorage.setItem('fit2-history', JSON.stringify(history));
+            localStorage.setItem('fitbro-workouts', JSON.stringify(workouts));
+            localStorage.setItem('fitbro-history', JSON.stringify(history));
         }
         
         // Render stats
@@ -1202,11 +1250,61 @@
         function addExerciseField() {
             const div = document.createElement('div');
             div.className = 'exercise-input-row';
-            div.innerHTML = `<input type="text" name="exercise[]" placeholder="Exercise name" required>
+            div.innerHTML = `
+                <input type="text" name="exercise[]" placeholder="Exercise name" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" onblur="hideSuggestionsDelayed(this)">
                 <input type="number" name="sets[]" placeholder="Sets" value="3" required>
                 <input type="number" name="reps[]" placeholder="Reps" value="10" required>
-                <button type="button" class="btn-remove" onclick="this.parentElement.remove()">✕</button>`;
+                <button type="button" class="btn-remove" onclick="this.parentElement.remove()">✕</button>
+                <div class="suggestions-dropdown" style="display:none;"></div>
+            `;
             document.getElementById('exercise-inputs').appendChild(div);
+        }
+        
+        function showSuggestions(input) {
+            const dropdown = input.nextElementSibling.nextElementSibling.nextElementSibling;
+            if (!dropdown || !dropdown.classList.contains('suggestions-dropdown')) return;
+            
+            const value = input.value.toLowerCase();
+            if (value.length < 1) {
+                dropdown.style.display = 'none';
+                return;
+            }
+            
+            const filtered = exerciseLibrary.filter(e => 
+                e.name.toLowerCase().includes(value)
+            ).slice(0, 8);
+            
+            if (filtered.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+            
+            dropdown.innerHTML = filtered.map((e, i) => `
+                <div class="suggestion-item" onclick="selectSuggestion(this, '${e.name.replace(/'/g, "\\'")}')">
+                    <span>${e.name}</span>
+                    <span>
+                        <span class="muscle-tag">${e.muscle}</span>
+                        <span class="machine-tag">${e.machine}</span>
+                    </span>
+                </div>
+            `).join('');
+            
+            dropdown.style.display = 'block';
+        }
+        
+        function selectSuggestion(dropdown, name) {
+            const input = dropdown.parentElement.previousElementSibling.previousElementSibling;
+            input.value = name;
+            dropdown.style.display = 'none';
+        }
+        
+        function hideSuggestionsDelayed(input) {
+            setTimeout(() => {
+                const dropdown = input.nextElementSibling.nextElementSibling.nextElementSibling;
+                if (dropdown && dropdown.classList.contains('suggestions-dropdown')) {
+                    dropdown.style.display = 'none';
+                }
+            }, 200);
         }
         
         function saveWorkout(event) {
@@ -1414,6 +1512,13 @@
             renderWorkouts();
             showHome();
             alert('Workout completed! 💪');
+        }
+        
+        function saveWorkoutEdits() {
+            // Just save current state and go back to home (editing done)
+            saveData();
+            renderWorkouts();
+            showHome();
         }
         
         function viewHistoryItem(id) {
