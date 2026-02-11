@@ -645,6 +645,52 @@
             gap: 0.75rem;
             margin-bottom: 1.5rem;
         }
+
+        /* Rest Timer */
+        .rest-timer {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card);
+            border: 2px solid var(--primary);
+            border-radius: 50px;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 4px 20px rgba(255,255,255,0.2);
+            z-index: 200;
+            animation: pulse 2s infinite;
+        }
+
+        .rest-timer.hidden {
+            display: none;
+        }
+
+        .rest-timer-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            font-variant-numeric: tabular-nums;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .rest-timer-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .rest-timer button {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            border-radius: 20px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 20px rgba(255,255,255,0.2); }
+            50% { box-shadow: 0 4px 30px rgba(255,255,255,0.4); }
+        }
     </style>
 </head>
 <body>
@@ -724,6 +770,17 @@
         <div class="container">
             <div class="workout-mode-badge">WORKOUT IN PROGRESS</div>
             
+            <!-- Rest Timer -->
+            <div id="rest-timer" class="rest-timer hidden">
+                <div class="rest-timer-display" id="rest-timer-display">2:00</div>
+                <div class="rest-timer-controls">
+                    <button class="btn btn-outline" onclick="adjustRestTime(-30)">-30s</button>
+                    <button class="btn btn-primary" id="rest-toggle-btn" onclick="toggleRestTimer()">⏸</button>
+                    <button class="btn btn-outline" onclick="adjustRestTime(30)">+30s</button>
+                    <button class="btn btn-outline" onclick="stopRestTimer()">✕</button>
+                </div>
+            </div>
+            
             <div class="section-title">Exercises</div>
             <div id="workout-exercises-list"></div>
         </div>
@@ -794,6 +851,13 @@
             <div class="modal-header">
                 <h2 id="log-exercise-name">Leg Press</h2>
                 <button class="modal-close" onclick="hideLogModal()">✕</button>
+            </div>
+            
+            <!-- Quick Rest Buttons -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <button class="btn btn-outline" onclick="startRestTimer(60); hideLogModal();" style="flex: 1;">⏱️ 60s</button>
+                <button class="btn btn-outline" onclick="startRestTimer(90); hideLogModal();" style="flex: 1;">⏱️ 90s</button>
+                <button class="btn btn-outline" onclick="startRestTimer(120); hideLogModal();" style="flex: 1;">⏱️ 2min</button>
             </div>
             
             <div id="logged-sets-list"></div>
@@ -991,7 +1055,7 @@
             const container = document.getElementById('workout-exercises-list');
             container.innerHTML = activeWorkout.exercises.map((ex, i) => {
                 const logged = activeSets[i]?.loggedSets || [];
-                return '<div class="exercise-card" onclick="openLogModal(' + i + ')"><div class="exercise-header"><div><div class="exercise-name">' + ex.name + '</div><div class="exercise-machine">' + ex.plannedSets + ' sets × ' + ex.plannedReps + ' reps' + (logged.length ? ' • ' + logged.length + ' logged' : '') + '</div></div></div>' + (logged.length ? '<div style="margin-top: 0.5rem;">' + logged.map((s, j) => '<div class="logged-set ' + (s.completed ? 'completed' : '') + '"><span class="set-number">' + (j + 1) + '</span><span class="set-values"><span class="kg">' + s.kg + 'kg</span><span class="reps">' + s.reps + ' reps</span></span><button class="check-btn ' + (s.completed ? 'completed' : '') + '" onclick="event.stopPropagation(); toggleSet(' + i + ', ' + j + ')">✓</button></div>').join('') + '</div>' : '') + '</div>';
+                return '<div class="exercise-card"><div class="exercise-header"><div><div class="exercise-name">' + ex.name + '</div><div class="exercise-machine">' + ex.plannedSets + ' sets × ' + ex.plannedReps + ' reps' + (logged.length ? ' • ' + logged.length + ' logged' : '') + '</div></div><button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); startRestTimer(90)" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">⏱️ 90s</button></div>' + (logged.length ? '<div style="margin-top: 0.5rem;">' + logged.map((s, j) => '<div class="logged-set ' + (s.completed ? 'completed' : '') + '"><span class="set-number">' + (j + 1) + '</span><span class="set-values"><span class="kg">' + s.kg + 'kg</span><span class="reps">' + s.reps + ' reps</span></span><button class="check-btn ' + (s.completed ? 'completed' : '') + '" onclick="event.stopPropagation(); toggleSet(' + i + ', ' + j + ')">✓</button></div>').join('') + '</div>' : '') + '</div>';
             }).join('');
         }
         
@@ -1054,6 +1118,64 @@
         
         function exitWorkout() {
             if (confirm('Exit workout? Progress will be lost.')) { showHome(); }
+        }
+
+        // Rest Timer
+        let restTimerInterval = null;
+        let restSeconds = 120;
+        let restRunning = false;
+
+        function startRestTimer(seconds = 120) {
+            restSeconds = seconds;
+            restRunning = true;
+            updateRestTimerDisplay();
+            document.getElementById('rest-timer').classList.remove('hidden');
+            document.getElementById('rest-toggle-btn').textContent = '⏸';
+            
+            if (restTimerInterval) clearInterval(restTimerInterval);
+            restTimerInterval = setInterval(() => {
+                if (restRunning && restSeconds > 0) {
+                    restSeconds--;
+                    updateRestTimerDisplay();
+                    if (restSeconds === 0) {
+                        playRestEndSound();
+                        stopRestTimer();
+                    }
+                }
+            }, 1000);
+        }
+
+        function toggleRestTimer() {
+            restRunning = !restRunning;
+            document.getElementById('rest-toggle-btn').textContent = restRunning ? '⏸' : '▶️';
+        }
+
+        function adjustRestTimer(seconds) {
+            restSeconds = Math.max(0, restSeconds + seconds);
+            updateRestTimerDisplay();
+        }
+
+        function stopRestTimer() {
+            if (restTimerInterval) {
+                clearInterval(restTimerInterval);
+                restTimerInterval = null;
+            }
+            restRunning = false;
+            document.getElementById('rest-timer').classList.add('hidden');
+        }
+
+        function updateRestTimerDisplay() {
+            const mins = Math.floor(restSeconds / 60);
+            const secs = restSeconds % 60;
+            document.getElementById('rest-timer-display').textContent = 
+                `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function playRestEndSound() {
+            // Vibration feedback
+            if (navigator.vibrate) {
+                navigator.vibrate([200, 100, 200]);
+            }
         }
         
         function showCreateWorkout() {
