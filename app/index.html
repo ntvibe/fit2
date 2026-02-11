@@ -18,14 +18,15 @@
         :root {
             --primary: #FFD700;
             --primary-dark: #E5C100;
+            --success: #44FF44;
+            --danger: #FF4444;
+            --warning: #FFAA00;
             --bg: #000000;
             --card: #1a1a1a;
             --card-hover: #242424;
             --text: #FFFFFF;
             --text-secondary: #888888;
             --border: #333333;
-            --danger: #FF4444;
-            --success: #44FF44;
         }
         
         body {
@@ -46,6 +47,15 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
         
         .header-title {
@@ -59,7 +69,6 @@
         .header-subtitle {
             font-size: 0.75rem;
             color: var(--text-secondary);
-            margin-top: 0.25rem;
         }
         
         /* Container */
@@ -98,13 +107,7 @@
             margin-top: 0.25rem;
         }
         
-        /* Quick Actions */
-        .quick-actions {
-            display: flex;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
-        
+        /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -124,24 +127,29 @@
             color: #000;
         }
         
-        .btn-primary:active {
-            background: var(--primary-dark);
-            transform: scale(0.98);
+        .btn-success {
+            background: var(--success);
+            color: #000;
         }
         
-        .btn-secondary {
-            background: var(--card);
-            color: var(--text);
-            flex: 1;
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+        
+        .btn-outline {
+            background: transparent;
             border: 1px solid var(--border);
-        }
-        
-        .btn-secondary:active {
-            background: var(--card-hover);
+            color: var(--text);
         }
         
         .btn-block {
             width: 100%;
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
         }
         
         /* Section Title */
@@ -175,6 +183,10 @@
             align-items: flex-start;
         }
         
+        .workout-info {
+            flex: 1;
+        }
+        
         .workout-info h3 {
             font-size: 1.1rem;
             font-weight: 600;
@@ -186,22 +198,27 @@
             color: var(--text-secondary);
         }
         
-        .workout-menu {
-            width: 32px;
-            height: 32px;
+        /* Play Button */
+        .play-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #000;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 50%;
-            color: var(--text-secondary);
+            font-size: 1.2rem;
+            border: none;
+            cursor: pointer;
+            flex-shrink: 0;
         }
         
-        .workout-menu:active {
-            background: var(--card-hover);
-            color: var(--text);
+        .play-btn:active {
+            transform: scale(0.95);
         }
         
-        /* Muscle Map Preview */
+        /* Muscle Preview */
         .muscle-preview {
             display: flex;
             gap: 0.5rem;
@@ -228,31 +245,19 @@
             border-radius: 12px;
             padding: 1rem;
             margin-bottom: 0.75rem;
+            border: 1px solid var(--border);
+        }
+        
+        .exercise-header {
             display: flex;
-            gap: 1rem;
-            align-items: center;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
         }
         
-        .exercise-thumb {
-            width: 60px;
-            height: 60px;
-            background: var(--card-hover);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-        
-        .exercise-info {
-            flex: 1;
-        }
-        
-        .exercise-info h4 {
+        .exercise-name {
             font-size: 0.95rem;
             font-weight: 600;
-            margin-bottom: 0.25rem;
         }
         
         .exercise-machine {
@@ -261,41 +266,179 @@
             text-transform: uppercase;
         }
         
-        .exercise-sets {
+        .exercise-actions {
             display: flex;
             gap: 0.5rem;
         }
         
-        .set-badge {
-            background: var(--card-hover);
-            padding: 0.35rem 0.6rem;
+        .exercise-delete {
+            width: 28px;
+            height: 28px;
+            background: transparent;
+            border: 1px solid var(--border);
             border-radius: 6px;
-            font-size: 0.75rem;
             color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.8rem;
         }
         
-        /* FAB */
-        .fab {
-            position: fixed;
-            bottom: 80px;
-            right: 1.5rem;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: #000;
-            font-size: 1.5rem;
+        .exercise-delete:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: #fff;
+        }
+        
+        /* Set Editor (Plan Mode) */
+        .set-editor {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .set-input-group {
             display: flex;
             align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
-            z-index: 100;
-            border: none;
-            cursor: pointer;
+            gap: 0.25rem;
         }
         
-        .fab:active {
-            transform: scale(0.95);
+        .set-input-group label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            width: 25px;
+        }
+        
+        .set-input-group input {
+            width: 50px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.4rem 0.25rem;
+            color: var(--text);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+        
+        .set-input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .add-set-btn {
+            background: var(--card-hover);
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            padding: 0.4rem 0.6rem;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        
+        .add-set-btn:hover {
+            background: var(--primary);
+            color: #000;
+            border-style: solid;
+            border-color: var(--primary);
+        }
+        
+        .remove-set-btn {
+            width: 24px;
+            height: 24px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        
+        .remove-set-btn:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: #fff;
+        }
+        
+        /* Logged Set (Workout Mode) */
+        .logged-set {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            padding: 0.5rem;
+            background: var(--bg);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .logged-set.completed {
+            border-left: 3px solid var(--success);
+        }
+        
+        .logged-set .set-number {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            width: 25px;
+        }
+        
+        .logged-set .set-values {
+            flex: 1;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .logged-set .kg, .logged-set .reps {
+            background: var(--card);
+            padding: 0.35rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .logged-set .check-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--card-hover);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .logged-set .check-btn.completed {
+            background: var(--success);
+            border-color: var(--success);
+            color: #000;
+        }
+        
+        /* Quick Log (Workout Mode) */
+        .quick-log {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .quick-log input {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.5rem;
+            color: var(--text);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+        
+        .quick-log input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .quick-log .btn {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
         }
         
         /* Bottom Nav */
@@ -428,59 +571,50 @@
             border-color: var(--primary);
         }
         
-        /* Search Bar */
-        .search-bar {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 0.75rem 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        .search-bar svg {
-            width: 20px;
-            height: 20px;
-            color: var(--text-secondary);
-        }
-        
-        .search-bar input {
-            flex: 1;
-            background: none;
-            border: none;
-            color: var(--text);
-            font-size: 1rem;
-        }
-        
-        .search-bar input:focus {
-            outline: none;
-        }
-        
-        /* Filter Chips */
-        .filter-chips {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            overflow-x: auto;
-            padding-bottom: 0.5rem;
-        }
-        
-        .filter-chip {
-            padding: 0.5rem 1rem;
+        /* Suggestions Dropdown */
+        .suggestions-dropdown {
+            position: absolute;
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 20px;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            cursor: pointer;
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 300;
+            width: calc(100% - 140px);
+            left: 0;
+            top: 100%;
+            margin-top: 0.25rem;
         }
         
-        .filter-chip.active {
-            background: var(--primary);
-            color: #000;
-            border-color: var(--primary);
+        .suggestion-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .suggestion-item:hover {
+            background: var(--card-hover);
+        }
+        
+        .suggestion-item .muscle-tag {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            background: var(--bg);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .suggestion-item .machine-tag {
+            font-size: 0.65rem;
+            color: var(--primary);
+            margin-left: 0.5rem;
         }
         
         /* Exercise Input Row */
@@ -511,62 +645,29 @@
             cursor: pointer;
         }
         
-        /* Suggestions Dropdown */
-        .suggestions-dropdown {
-            position: absolute;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 300;
-            width: calc(100% - 140px);
-            left: 0;
-            top: 100%;
-            margin-top: 0.25rem;
-        }
-        
-        .suggestion-item {
-            padding: 0.75rem 1rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
-        
-        .suggestion-item:hover, .suggestion-item.selected {
-            background: var(--card-hover);
-        }
-        
-        .suggestion-item .muscle-tag {
-            font-size: 0.65rem;
-            color: var(--text-secondary);
-            background: var(--bg);
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-        }
-        
-        .suggestion-item .machine-tag {
-            font-size: 0.65rem;
-            color: var(--primary);
-            margin-left: 0.5rem;
-        }
-        
-        /* Set Input */
-        .set-inputs {
+        /* Filter Chips */
+        .filter-chips {
             display: flex;
             gap: 0.5rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
         }
         
-        .set-inputs input {
-            flex: 1;
-            text-align: center;
+        .filter-chip {
+            padding: 0.5rem 1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        
+        .filter-chip.active {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
         }
         
         /* Action Buttons */
@@ -578,6 +679,70 @@
         
         .action-row .btn {
             flex: 1;
+        }
+        
+        /* Header Buttons */
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .header-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .header-btn-done {
+            background: var(--text);
+            color: var(--bg);
+        }
+        
+        .header-btn-start {
+            background: var(--success);
+            color: #000;
+        }
+        
+        .header-btn-exit {
+            background: var(--card-hover);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        
+        .header-btn-complete {
+            background: var(--primary);
+            color: #000;
+        }
+        
+        /* Workout Mode Indicator */
+        .workout-mode-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: var(--success);
+            color: #000;
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .workout-mode-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: #000;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         
         /* Scrollbar */
@@ -599,55 +764,11 @@
             display: none !important;
         }
         
-        /* Workout Header Big */
-        .workout-header-big {
-            background: var(--card);
-            margin: -1rem -1rem 1rem;
-            padding: 1.5rem 1rem;
+        /* Quick Actions */
+        .quick-actions {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-        
-        .workout-header-big h1 {
-            font-size: 2rem;
-            font-weight: 700;
-        }
-        
-        .workout-header-big .meta {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
-        }
-        
-        .workout-stats-row {
-            display: flex;
-            gap: 1.5rem;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border);
-        }
-        
-        .workout-stat {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.8rem;
-        }
-        
-        .workout-stat .icon {
-            color: var(--primary);
-        }
-        
-        .done-btn {
-            background: var(--text);
-            color: var(--bg);
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            border: none;
-            cursor: pointer;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
         }
     </style>
 </head>
@@ -656,10 +777,11 @@
     <div id="home-screen">
         <header>
             <div class="header-title">🏋️ FitBro</div>
-            <div class="header-subtitle" id="current-date"></div>
         </header>
         
         <div class="container">
+            <div class="header-subtitle" id="current-date"></div>
+            
             <!-- Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
@@ -678,57 +800,64 @@
             
             <!-- Quick Actions -->
             <div class="quick-actions">
-                <button class="btn btn-primary" onclick="showCreateWorkout()">
+                <button class="btn btn-primary btn-block" onclick="showCreateWorkout()">
                     ➕ New Workout
-                </button>
-                <button class="btn btn-secondary" onclick="showQuickStart()">
-                    ⚡ Quick Start
                 </button>
             </div>
             
-            <!-- Today's Plans -->
+            <!-- Workout Plans -->
             <div class="section-title">Your Workouts</div>
             <div id="workout-list"></div>
             
-            <!-- Recent History -->
-            <div class="section-title" style="margin-top: 1.5rem;">Recent</div>
+            <!-- Recent Sessions -->
+            <div class="section-title" style="margin-top: 1.5rem;">Recent Sessions</div>
             <div id="recent-list"></div>
         </div>
     </div>
     
-    <!-- Workout Detail Screen -->
-    <div id="workout-detail" class="hidden">
+    <!-- Edit Mode (Plan Workout) -->
+    <div id="edit-mode" class="hidden">
         <header>
-            <button class="btn-secondary" onclick="showHome()" style="padding: 0.5rem 0.75rem; font-size: 0.8rem;">
-                ← Back
-            </button>
+            <div class="header-left">
+                <button class="btn btn-outline btn-sm" onclick="showHome()">
+                    ← Back
+                </button>
+            </div>
+            <div class="header-title" style="font-size: 1.1rem;" id="edit-title">PULL</div>
+            <div class="header-actions">
+                <button class="header-btn header-btn-done" onclick="saveAndExit()">DONE</button>
+            </div>
         </header>
         
         <div class="container">
-            <div class="workout-header-big">
-                <div>
-                    <h1 id="detail-title">PULL</h1>
-                    <div class="meta" id="detail-date"></div>
-                    <div class="workout-stats-row">
-                        <div class="workout-stat">
-                            <span class="icon">📊</span>
-                            <span id="detail-exercises">0 exercises</span>
-                        </div>
-                        <div class="workout-stat">
-                            <span class="icon">⏱️</span>
-                            <span id="detail-duration">0 min</span>
-                        </div>
-                    </div>
-                </div>
-                <button class="done-btn" onclick="saveWorkoutEdits()">DONE</button>
-            </div>
+            <div class="section-title">Exercises</div>
+            <div id="edit-exercises-list"></div>
             
-            <div class="section-title">Exercise List</div>
-            <div id="detail-exercises-list"></div>
-            
-            <button class="btn btn-primary btn-block" onclick="showAddExercise()" style="margin-top: 1rem;">
+            <button class="btn btn-outline btn-block" onclick="showAddExercise()" style="margin-top: 0.75rem; margin-bottom: 1rem;">
                 ➕ Add Exercise
             </button>
+        </div>
+    </div>
+    
+    <!-- Workout Mode (Execute) -->
+    <div id="workout-mode" class="hidden">
+        <header>
+            <div class="header-left">
+                <button class="btn btn-outline btn-sm" onclick="exitWorkout()">
+                    EXIT
+                </button>
+            </div>
+            <div class="header-title" style="font-size: 1.1rem;" id="workout-title">PULL</div>
+            <div class="header-actions">
+                <button class="header-btn header-btn-complete" onclick="completeWorkout()">DONE</button>
+            </div>
+        </header>
+        
+        <div class="container">
+            <div class="workout-mode-badge">WORKOUT IN PROGRESS</div>
+            
+            <div class="section-title">Exercises</div>
+            <div id="workout-exercises-list"></div>
         </div>
     </div>
     
@@ -740,7 +869,7 @@
                 <button class="modal-close" onclick="hideCreateWorkout()">✕</button>
             </div>
             
-            <form id="create-form" onsubmit="saveWorkout(event)">
+            <form id="create-form" onsubmit="saveNewWorkout(event)">
                 <div class="form-group">
                     <label>Workout Name</label>
                     <input type="text" id="workout-name" placeholder="e.g., PUSH, LEG DAY" required>
@@ -757,13 +886,13 @@
                             <div class="suggestions-dropdown" style="display:none;"></div>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-secondary" onclick="addExerciseField()" style="width: 100%; margin-top: 0.5rem;">
+                    <button type="button" class="btn btn-outline" onclick="addExerciseField()" style="width: 100%; margin-top: 0.5rem;">
                         ➕ Add Exercise
                     </button>
                 </div>
                 
                 <div class="action-row">
-                    <button type="button" class="btn btn-secondary" onclick="hideCreateWorkout()">Cancel</button>
+                    <button type="button" class="btn btn-outline" onclick="hideCreateWorkout()">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
@@ -778,12 +907,8 @@
                 <button class="modal-close" onclick="hideAddExercise()">✕</button>
             </div>
             
-            <div class="search-bar">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="m21 21-4.35-4.35"></path>
-                </svg>
-                <input type="text" id="exercise-search" placeholder="Search exercises..." oninput="filterExercises()">
+            <div class="form-group">
+                <input type="text" id="exercise-search" placeholder="Search exercises..." oninput="renderExerciseLibrary()">
             </div>
             
             <div class="filter-chips">
@@ -801,29 +926,23 @@
     </div>
     
     <!-- Log Set Modal -->
-    <div id="log-set-modal" class="modal">
+    <div id="log-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="log-exercise-name">Leg Press</h2>
-                <button class="modal-close" onclick="hideLogSet()">✕</button>
+                <button class="modal-close" onclick="hideLogModal()">✕</button>
             </div>
             
-            <div id="log-sets"></div>
+            <div id="logged-sets-list"></div>
             
-            <button class="btn btn-secondary" onclick="addLogSet()" style="width: 100%; margin-bottom: 1rem;">
-                ➕ Add Set
-            </button>
-            
-            <div class="form-group">
-                <label>Quick Log</label>
-                <div class="set-inputs">
-                    <input type="number" id="quick-weight" placeholder="kg">
-                    <input type="number" id="quick-reps" placeholder="reps">
-                </div>
+            <div class="quick-log">
+                <input type="number" id="quick-kg" placeholder="kg">
+                <input type="number" id="quick-reps" placeholder="reps">
+                <button class="btn btn-success" onclick="quickLogSet()">✓</button>
             </div>
             
-            <button class="btn btn-primary btn-block" onclick="quickLogSet()">
-                💾 Save Set
+            <button class="btn btn-outline btn-block" onclick="hideLogModal()" style="margin-top: 1rem;">
+                Close
             </button>
         </div>
     </div>
@@ -837,42 +956,30 @@
             </svg>
             Home
         </a>
-        <a href="#" class="nav-item" onclick="showWorkouts()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            Workouts
-        </a>
         <a href="#" class="nav-item" onclick="showHistory()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
             </svg>
             History
         </a>
-        <a href="#" class="nav-item" onclick="showProfile()">
+        <a href="#" class="nav-item" onclick="showSettings()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="3"></circle>
                 <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
             </svg>
-            Profile
+            Settings
         </a>
     </nav>
     
     <script>
-        // Exercise Library - 100+ Strength Exercises
+        // Exercise Library - 150+ Strength Exercises
         const exerciseLibrary = [
-            // CHEST - Barbell
             { name: 'Barbell Bench Press', machine: 'BARBELL', muscle: 'chest' },
             { name: 'Barbell Incline Bench Press', machine: 'BARBELL', muscle: 'chest' },
             { name: 'Barbell Decline Bench Press', machine: 'BARBELL', muscle: 'chest' },
             { name: 'Floor Press', machine: 'BARBELL', muscle: 'chest' },
             { name: 'Close-Grip Bench Press', machine: 'BARBELL', muscle: 'chest' },
             { name: 'Reverse Grip Bench Press', machine: 'BARBELL', muscle: 'chest' },
-            
-            // CHEST - Dumbbell
             { name: 'Dumbbell Bench Press', machine: 'DUMBBELL', muscle: 'chest' },
             { name: 'Dumbbell Incline Press', machine: 'DUMBBELL', muscle: 'chest' },
             { name: 'Dumbbell Decline Press', machine: 'DUMBBELL', muscle: 'chest' },
@@ -883,22 +990,16 @@
             { name: 'Single Arm Dumbbell Press', machine: 'DUMBBELL', muscle: 'chest' },
             { name: 'Arnold Press', machine: 'DUMBBELL', muscle: 'chest' },
             { name: 'Squeeze Press', machine: 'DUMBBELL', muscle: 'chest' },
-            
-            // CHEST - Cable
             { name: 'Cable Fly', machine: 'CABLE', muscle: 'chest' },
             { name: 'Incline Cable Fly', machine: 'CABLE', muscle: 'chest' },
             { name: 'Cable Cross-over', machine: 'CABLE', muscle: 'chest' },
             { name: 'Cable Bench Press', machine: 'CABLE', muscle: 'chest' },
             { name: 'Low Cable Cross-over', machine: 'CABLE', muscle: 'chest' },
             { name: 'High Cable Cross-over', machine: 'CABLE', muscle: 'chest' },
-            
-            // CHEST - Machine
             { name: 'Machine Chest Press', machine: 'MACHINE', muscle: 'chest' },
             { name: 'Pec Deck Fly', machine: 'MACHINE', muscle: 'chest' },
             { name: 'Hammer Strength Chest Press', machine: 'MACHINE', muscle: 'chest' },
             { name: 'Chest Press Machine', machine: 'MACHINE', muscle: 'chest' },
-            
-            // CHEST - Bodyweight
             { name: 'Push-ups', machine: 'BODYWEIGHT', muscle: 'chest' },
             { name: 'Wide Grip Push-ups', machine: 'BODYWEIGHT', muscle: 'chest' },
             { name: 'Close Grip Push-ups', machine: 'BODYWEIGHT', muscle: 'chest' },
@@ -906,8 +1007,6 @@
             { name: 'Diamond Push-ups', machine: 'BODYWEIGHT', muscle: 'chest' },
             { name: 'Archer Push-ups', machine: 'BODYWEIGHT', muscle: 'chest' },
             { name: 'Dips', machine: 'BODYWEIGHT', muscle: 'chest' },
-            
-            // BACK - Barbell
             { name: 'Barbell Deadlift', machine: 'BARBELL', muscle: 'back' },
             { name: 'Sumo Deadlift', machine: 'BARBELL', muscle: 'back' },
             { name: 'Romanian Deadlift', machine: 'BARBELL', muscle: 'back' },
@@ -916,15 +1015,11 @@
             { name: 'T-Bar Row', machine: 'BARBELL', muscle: 'back' },
             { name: 'One Arm Barbell Row', machine: 'BARBELL', muscle: 'back' },
             { name: 'Deadlift Variation', machine: 'BARBELL', muscle: 'back' },
-            
-            // BACK - Dumbbell
             { name: 'Dumbbell Row', machine: 'DUMBBELL', muscle: 'back' },
             { name: 'One Arm Dumbbell Row', machine: 'DUMBBELL', muscle: 'back' },
             { name: 'Renegade Row', machine: 'DUMBBELL', muscle: 'back' },
             { name: 'Dumbbell Deadlift', machine: 'DUMBBELL', muscle: 'back' },
             { name: 'Inverted Row', machine: 'DUMBBELL', muscle: 'back' },
-            
-            // BACK - Cable
             { name: 'Lat Pulldown', machine: 'CABLE', muscle: 'back' },
             { name: 'Straight Arm Pulldown', machine: 'CABLE', muscle: 'back' },
             { name: 'Seated Cable Row', machine: 'CABLE', muscle: 'back' },
@@ -933,191 +1028,21 @@
             { name: 'Cable Shrug', machine: 'CABLE', muscle: 'back' },
             { name: 'Rope Straight Arm Pulldown', machine: 'CABLE', muscle: 'back' },
             { name: 'V-Bar Pulldown', machine: 'CABLE', muscle: 'back' },
-            
-            // BACK - Machine
             { name: 'Lat Pulldown Machine', machine: 'MACHINE', muscle: 'back' },
             { name: 'Seated Row Machine', machine: 'MACHINE', muscle: 'back' },
             { name: 'Chest Supported Row', machine: 'MACHINE', muscle: 'back' },
             { name: 'Hammer Strength Row', machine: 'MACHINE', muscle: 'back' },
             { name: 'Back Extension Machine', machine: 'MACHINE', muscle: 'back' },
-            
-            // BACK - Bodyweight
             { name: 'Pull-ups', machine: 'BODYWEIGHT', muscle: 'back' },
             { name: 'Chin-ups', machine: 'BODYWEIGHT', muscle: 'back' },
             { name: 'Wide Grip Pull-ups', machine: 'BODYWEIGHT', muscle: 'back' },
             { name: 'Close Grip Chin-ups', machine: 'BODYWEIGHT', muscle: 'back' },
-            { name: 'Neutral Grip Pull-ups', machine: 'BODYWEIGHT', muscle: 'back' },
-            { name: 'Inverted Row', machine: 'BODYWEIGHT', muscle: 'back' },
-            
-            // SHOULDERS - Barbell
-            { name: 'Barbell Overhead Press', machine: 'BARBELL', muscle: 'shoulders' },
-            { name: 'Military Press', machine: 'BARBELL', muscle: 'shoulders' },
-            { name: 'Push Press', machine: 'BARBELL', muscle: 'shoulders' },
-            { name: 'Seated Barbell Press', machine: 'BARBELL', muscle: 'shoulders' },
-            { name: 'Front Raise', machine: 'BARBELL', muscle: 'shoulders' },
-            { name: 'Upright Row', machine: 'BARBELL', muscle: 'shoulders' },
-            
-            // SHOULDERS - Dumbbell
-            { name: 'Dumbbell Overhead Press', machine: 'DUMBBELL', muscle: 'shoulders' },
-            { name: 'Seated Dumbbell Press', machine: 'DUMBBELL', muscle: 'shoulders' },
-            { name: 'Standing Dumbbell Press', machine: 'DUMBBELL', muscle: 'shoulders' },
-            { name: 'Arnold Press', machine: 'DUMBBELL', muscle: 'shoulders' },
-            { name: 'Lateral Raise', machine: 'DUMBBELL', muscle: 'shoulders' },
-            { name: 'Front Raise', machine: 'DUMBBELL', muscle: 'shoulders' },
-            { name: 'Rear Delt Fly', machine: 'DUMBBELL', muscle: 'shoulders' },
-            { name: 'Reverse Fly', machine: 'DUMBBELL', muscle: 'shoulders' },
-            { name: 'Single Arm Lateral Raise', machine: 'DUMBBELL', muscle: 'shoulders' },
-            { name: 'Leaning Lateral Raise', machine: 'DUMBBELL', muscle: 'shoulders' },
-            { name: 'Y-T-W-L Raises', machine: 'DUMBBELL', muscle: 'shoulders' },
-            
-            // SHOULDERS - Cable
-            { name: 'Cable Lateral Raise', machine: 'CABLE', muscle: 'shoulders' },
-            { name: 'Cable Front Raise', machine: 'CABLE', muscle: 'shoulders' },
-            { name: 'Cable Face Pull', machine: 'CABLE', muscle: 'shoulders' },
-            { name: 'Reverse Cable Fly', machine: 'CABLE', muscle: 'shoulders' },
-            { name: 'Cable Overhead Press', machine: 'CABLE', muscle: 'shoulders' },
-            
-            // SHOULDERS - Machine
-            { name: 'Machine Shoulder Press', machine: 'MACHINE', muscle: 'shoulders' },
-            { name: 'Hammer Strength Shoulder Press', machine: 'MACHINE', muscle: 'shoulders' },
-            { name: 'Pec Deck Rear Delt', machine: 'MACHINE', muscle: 'shoulders' },
-            { name: 'Reverse Pec Deck', machine: 'MACHINE', muscle: 'shoulders' },
-            
-            // LEGS - Barbell
-            { name: 'Barbell Back Squat', machine: 'BARBELL', muscle: 'legs' },
-            { name: 'Barbell Front Squat', machine: 'BARBELL', muscle: 'legs' },
-            { name: 'Barbell Lunges', machine: 'BARBELL', muscle: 'legs' },
-            { name: 'Barbell Hip Thrust', machine: 'BARBELL', muscle: 'legs' },
-            { name: 'Romanian Deadlift', machine: 'BARBELL', muscle: 'legs' },
-            { name: 'Good Morning', machine: 'BARBELL', muscle: 'legs' },
-            { name: 'Bulgarian Split Squat', machine: 'BARBELL', muscle: 'legs' },
-            { name: 'Hack Squat', machine: 'BARBELL', muscle: 'legs' },
-            
-            // LEGS - Dumbbell
-            { name: 'Dumbbell Goblet Squat', machine: 'DUMBBELL', muscle: 'legs' },
-            { name: 'Dumbbell Lunges', machine: 'DUMBBELL', muscle: 'legs' },
-            { name: 'Dumbbell Bulgarian Split Squat', machine: 'DUMBBELL', muscle: 'legs' },
-            { name: 'Dumbbell RDL', machine: 'DUMBBELL', muscle: 'legs' },
-            { name: 'Dumbbell Hip Thrust', machine: 'DUMBBELL', muscle: 'legs' },
-            { name: 'Dumbbell Deadlift', machine: 'DUMBBELL', muscle: 'legs' },
-            { name: 'Sumo Squat', machine: 'DUMBBELL', muscle: 'legs' },
-            { name: 'Single Leg Deadlift', machine: 'DUMBBELL', muscle: 'legs' },
-            
-            // LEGS - Machine
-            { name: 'Leg Press', machine: 'LEG PRESS', muscle: 'legs' },
-            { name: 'Hack Squat Machine', machine: 'MACHINE', muscle: 'legs' },
-            { name: 'Leg Extension', machine: 'LEG EXTENSION', muscle: 'legs' },
-            { name: 'Leg Curl', machine: 'LEG CURL', muscle: 'legs' },
-            { name: 'Seated Leg Curl', machine: 'MACHINE', muscle: 'legs' },
-            { name: 'Lying Leg Curl', machine: 'MACHINE', muscle: 'legs' },
-            { name: 'Calf Raise', machine: 'CALF RAISE', muscle: 'legs' },
-            { name: 'Seated Calf Raise', machine: 'MACHINE', muscle: 'legs' },
-            { name: 'Standing Calf Raise', machine: 'MACHINE', muscle: 'legs' },
-            { name: 'Hip Abductor', machine: 'MACHINE', muscle: 'legs' },
-            { name: 'Hip Adductor', machine: 'MACHINE', muscle: 'legs' },
-            { name: 'Glute Machine', machine: 'MACHINE', muscle: 'legs' },
-            { name: 'Glute Bridge', machine: 'MACHINE', muscle: 'legs' },
-            { name: 'Abductor Machine', machine: 'MACHINE', muscle: 'legs' },
-            { name: 'Adductor Machine', machine: 'MACHINE', muscle: 'legs' },
-            
-            // LEGS - Cable
-            { name: 'Cable Squat', machine: 'CABLE', muscle: 'legs' },
-            { name: 'Cable Lunges', machine: 'CABLE', muscle: 'legs' },
-            { name: 'Cable Hip Thrust', machine: 'CABLE', muscle: 'legs' },
-            { name: 'Cable Pull Through', machine: 'CABLE', muscle: 'legs' },
-            
-            // LEGS - Bodyweight
-            { name: 'Bodyweight Squat', machine: 'BODYWEIGHT', muscle: 'legs' },
-            { name: 'Lunges', machine: 'BODYWEIGHT', muscle: 'legs' },
-            { name: 'Bulgarian Split Squat', machine: 'BODYWEIGHT', muscle: 'legs' },
-            { name: 'Jump Squat', machine: 'BODYWEIGHT', muscle: 'legs' },
-            { name: 'Pistol Squat', machine: 'BODYWEIGHT', muscle: 'legs' },
-            { name: 'Glute Bridges', machine: 'BODYWEIGHT', muscle: 'legs' },
-            { name: 'Single Leg Glute Bridge', machine: 'BODYWEIGHT', muscle: 'legs' },
-            
-            // BICEPS - Barbell
-            { name: 'Barbell Curl', machine: 'BARBELL', muscle: 'arms' },
-            { name: 'Preacher Curl', machine: 'BARBELL', muscle: 'arms' },
-            { name: 'Reverse Curl', machine: 'BARBELL', muscle: 'arms' },
-            { name: 'Hammer Curl', machine: 'BARBELL', muscle: 'arms' },
-            
-            // BICEPS - Dumbbell
-            { name: 'Dumbbell Curl', machine: 'DUMBBELL', muscle: 'arms' },
-            { name: 'Hammer Curl', machine: 'DUMBBELL', muscle: 'arms' },
-            { name: 'Concentration Curl', machine: 'DUMBBELL', muscle: 'arms' },
-            { name: 'Incline Dumbbell Curl', machine: 'DUMBBELL', muscle: 'arms' },
-            { name: 'Spider Curl', machine: 'DUMBBELL', muscle: 'arms' },
-            { name: 'Zottman Curl', machine: 'DUMBBELL', muscle: 'arms' },
-            { name: 'Reverse Curl', machine: 'DUMBBELL', muscle: 'arms' },
-            { name: 'Alternating Dumbbell Curl', machine: 'DUMBBELL', muscle: 'arms' },
-            
-            // BICEPS - Cable
-            { name: 'Cable Curl', machine: 'CABLE', muscle: 'arms' },
-            { name: 'Rope Cable Curl', machine: 'CABLE', muscle: 'arms' },
-            { name: 'Hammer Grip Cable Curl', machine: 'CABLE', muscle: 'arms' },
-            { name: 'Preacher Cable Curl', machine: 'CABLE', muscle: 'arms' },
-            
-            // TRICEPS - Barbell
-            { name: 'Barbell Skull Crusher', machine: 'BARBELL', muscle: 'arms' },
-            { name: 'Close Grip Bench Press', machine: 'BARBELL', muscle: 'arms' },
-            { name: 'Tricep Extension', machine: 'BARBELL', muscle: 'arms' },
-            
-            // TRICEPS - Dumbbell
-            { name: 'Tricep Skull Crusher', machine: 'DUMBBELL', muscle: 'arms' },
-            { name: 'Overhead Tricep Extension', machine: 'DUMBBELL', muscle: 'arms' },
-            { name: 'Dumbbell Kickback', machine: 'DUMBBELL', muscle: 'arms' },
-            { name: 'One Arm Tricep Extension', machine: 'DUMBBELL', muscle: 'arms' },
-            { name: 'Floor Press', machine: 'DUMBBELL', muscle: 'arms' },
-            
-            // TRICEPS - Cable
-            { name: 'Tricep Pushdown', machine: 'CABLE', muscle: 'arms' },
-            { name: 'Rope Pushdown', machine: 'CABLE', muscle: 'arms' },
-            { name: 'V-Bar Pushdown', machine: 'CABLE', muscle: 'arms' },
-            { name: 'Overhead Cable Extension', machine: 'CABLE', muscle: 'arms' },
-            { name: 'Reverse Grip Pushdown', machine: 'CABLE', muscle: 'arms' },
-            { name: 'Lying Tricep Extension', machine: 'CABLE', muscle: 'arms' },
-            
-            // TRICEPS - Machine
-            { name: 'Tricep Dip Machine', machine: 'MACHINE', muscle: 'arms' },
-            { name: 'Tricep Extension Machine', machine: 'MACHINE', muscle: 'arms' },
-            
-            // TRICEPS - Bodyweight
-            { name: 'Tricep Dips', machine: 'BODYWEIGHT', muscle: 'arms' },
-            { name: 'Bench Dips', machine: 'BODYWEIGHT', muscle: 'arms' },
-            
-            // CORE
-            { name: 'Plank', machine: 'BODYWEIGHT', muscle: 'core' },
-            { name: 'Side Plank', machine: 'BODYWEIGHT', muscle: 'core' },
-            { name: 'Crunches', machine: 'BODYWEIGHT', muscle: 'core' },
-            { name: 'Bicycle Crunches', machine: 'BODYWEIGHT', muscle: 'core' },
-            { name: 'Russian Twist', machine: 'BODYWEIGHT', muscle: 'core' },
-            { name: 'Leg Raise', machine: 'BODYWEIGHT', muscle: 'core' },
-            { name: 'Hanging Leg Raise', machine: 'BODYWEIGHT', muscle: 'core' },
-            { name: 'Dead Bug', machine: 'BODYWEIGHT', muscle: 'core' },
-            { name: 'Mountain Climbers', machine: 'BODYWEIGHT', muscle: 'core' },
-            { name: 'Ab Rollout', machine: 'BODYWEIGHT', muscle: 'core' },
-            { name: 'Cable Woodchop', machine: 'CABLE', muscle: 'core' },
-            { name: 'Cable Crunch', machine: 'CABLE', muscle: 'core' },
-            { name: 'Cable Side Crunch', machine: 'CABLE', muscle: 'core' },
-            { name: 'Ab Machine', machine: 'MACHINE', muscle: 'core' },
-            { name: 'Roman Chair Crunch', machine: 'MACHINE', muscle: 'core' },
-            { name: 'Ab Wheel Rollout', machine: 'BODYWEIGHT', muscle: 'core' },
-            
-            // NECK / TRAPS
-            { name: 'Barbell Shrug', machine: 'BARBELL', muscle: 'back' },
-            { name: 'Dumbbell Shrug', machine: 'DUMBBELL', muscle: 'back' },
-            { name: 'Cable Shrug', machine: 'CABLE', muscle: 'back' },
-            { name: 'Machine Shrug', machine: 'MACHINE', muscle: 'back' },
-            { name: 'Neck Flexion', machine: 'BODYWEIGHT', muscle: 'back' },
-            { name: 'Neck Extension', machine: 'BODYWEIGHT', muscle: 'back' },
-        ];
-        
-        // State
-        let workouts = [];
+            {        let workouts = [];
         let history = [];
         let currentWorkoutId = null;
         let currentExerciseIndex = null;
         let currentFilter = 'all';
+        let editingWorkout = null;
         
         // Load data
         function loadData() {
@@ -1125,8 +1050,10 @@
             history = JSON.parse(localStorage.getItem('fitbro-history') || '[]');
             
             const dateEl = document.getElementById('current-date');
-            const options = { weekday: 'long', month: 'short', day: 'numeric' };
-            dateEl.textContent = new Date().toLocaleDateString('en-US', options);
+            if (dateEl) {
+                const options = { weekday: 'long', month: 'short', day: 'numeric' };
+                dateEl.textContent = new Date().toLocaleDateString('en-US', options);
+            }
             
             renderWorkouts();
             renderStats();
@@ -1190,13 +1117,13 @@
                 `;
             } else {
                 container.innerHTML = workouts.map((w) => `
-                    <div class="workout-card" onclick="openWorkout('${w.id}')">
+                    <div class="workout-card" onclick="openEditMode('${w.id}')">
                         <div class="workout-header">
                             <div class="workout-info">
                                 <h3>${w.name}</h3>
-                                <div class="workout-meta">${w.exercises?.length || 0} exercises • Created ${new Date(w.createdAt).toLocaleDateString()}</div>
+                                <div class="workout-meta">${w.exercises?.length || 0} exercises</div>
                             </div>
-                            <div class="workout-menu" onclick="event.stopPropagation(); showWorkoutMenu('${w.id}')">⋮</div>
+                            <button class="play-btn" onclick="event.stopPropagation(); startWorkout('${w.id}')">▶</button>
                         </div>
                         ${w.exercises?.length ? `<div class="muscle-preview">${getMuscleBadges(w.exercises)}</div>` : ''}
                     </div>
@@ -1210,11 +1137,12 @@
                 recentContainer.innerHTML = '<div class="empty-state" style="padding: 1rem;"><p>No workout history yet</p></div>';
             } else {
                 recentContainer.innerHTML = recent.map(h => `
-                    <div class="exercise-card" style="cursor: pointer;" onclick="viewHistoryItem('${h.id}')">
-                        <div class="exercise-thumb">💪</div>
-                        <div class="exercise-info">
-                            <h4>${h.workoutName}</h4>
-                            <div class="exercise-machine">${new Date(h.date).toLocaleDateString()}</div>
+                    <div class="workout-card" onclick="viewHistoryItem('${h.id}')">
+                        <div class="workout-header">
+                            <div class="workout-info">
+                                <h3>${h.workoutName}</h3>
+                                <div class="workout-meta">${new Date(h.date).toLocaleDateString()}</div>
+                            </div>
                         </div>
                     </div>
                 `).join('');
@@ -1224,12 +1152,197 @@
         // Navigation
         function showHome() {
             document.getElementById('home-screen').classList.remove('hidden');
-            document.getElementById('workout-detail').classList.add('hidden');
+            document.getElementById('edit-mode').classList.add('hidden');
+            document.getElementById('workout-mode').classList.add('hidden');
         }
         
-        function showWorkouts() { showHome(); }
         function showHistory() { alert('History coming soon!'); }
-        function showProfile() { alert('Profile coming soon!'); }
+        function showSettings() { alert('Settings coming soon!'); }
+        
+        // Edit Mode
+        function openEditMode(id) {
+            currentWorkoutId = id;
+            editingWorkout = JSON.parse(JSON.stringify(workouts.find(w => w.id === id)));
+            document.getElementById('edit-title').textContent = editingWorkout.name;
+            renderEditExercises();
+            document.getElementById('home-screen').classList.add('hidden');
+            document.getElementById('edit-mode').classList.remove('hidden');
+        }
+        
+        function renderEditExercises() {
+            const container = document.getElementById('edit-exercises-list');
+            if (!editingWorkout.exercises || editingWorkout.exercises.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No exercises yet</p></div>';
+                return;
+            }
+            container.innerHTML = editingWorkout.exercises.map((ex, i) => `
+                <div class="exercise-card">
+                    <div class="exercise-header">
+                        <div>
+                            <div class="exercise-name">${ex.name}</div>
+                            <div class="exercise-machine">${ex.plannedSets} sets × ${ex.plannedReps} reps</div>
+                        </div>
+                        <div class="exercise-actions">
+                            <button class="exercise-delete" onclick="removeExercise(${i})">✕</button>
+                        </div>
+                    </div>
+                    <div class="set-editor">
+                        <div class="set-input-group">
+                            <label>Sets</label>
+                            <input type="number" value="${ex.plannedSets}" onchange="updatePlannedSets(${i}, this.value)">
+                        </div>
+                        <div class="set-input-group">
+                            <label>Reps</label>
+                            <input type="number" value="${ex.plannedReps}" onchange="updatePlannedReps(${i}, this.value)">
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updatePlannedSets(i, val) {
+            editingWorkout.exercises[i].plannedSets = parseInt(val) || 3;
+        }
+        
+        function updatePlannedReps(i, val) {
+            editingWorkout.exercises[i].plannedReps = parseInt(val) || 10;
+        }
+        
+        function removeExercise(i) {
+            editingWorkout.exercises.splice(i, 1);
+            renderEditExercises();
+        }
+        
+        function saveAndExit() {
+            const idx = workouts.findIndex(w => w.id === currentWorkoutId);
+            if (idx !== -1) {
+                workouts[idx] = editingWorkout;
+                saveData();
+            }
+            showHome();
+        }
+        
+        // Workout Mode
+        let activeWorkout = null;
+        let activeSets = [];
+        
+        function startWorkout(id) {
+            const template = workouts.find(w => w.id === id);
+            activeWorkout = JSON.parse(JSON.stringify(template));
+            activeSets = activeWorkout.exercises.map(ex => ({
+                name: ex.name,
+                loggedSets: []
+            }));
+            
+            document.getElementById('workout-title').textContent = activeWorkout.name;
+            renderWorkoutExercises();
+            document.getElementById('home-screen').classList.add('hidden');
+            document.getElementById('workout-mode').classList.remove('hidden');
+        }
+        
+        function renderWorkoutExercises() {
+            const container = document.getElementById('workout-exercises-list');
+            container.innerHTML = activeWorkout.exercises.map((ex, i) => {
+                const logged = activeSets[i]?.loggedSets || [];
+                return `
+                    <div class="exercise-card" onclick="openLogModal(${i})">
+                        <div class="exercise-header">
+                            <div>
+                                <div class="exercise-name">${ex.name}</div>
+                                <div class="exercise-machine">${ex.plannedSets} sets × ${ex.plannedReps} reps${logged.length ? ` • ${logged.length} logged` : ''}</div>
+                            </div>
+                        </div>
+                        ${logged.length ? `<div style="margin-top: 0.5rem;">${logged.map((s, j) => `
+                            <div class="logged-set ${s.completed ? 'completed' : ''}">
+                                <span class="set-number">${j + 1}</span>
+                                <span class="set-values">
+                                    <span class="kg">${s.kg}kg</span>
+                                    <span class="reps">${s.reps} reps</span>
+                                </span>
+                                <button class="check-btn ${s.completed ? 'completed' : ''}" onclick="event.stopPropagation(); toggleSet(${i}, ${j})">✓</button>
+                            </div>
+                        `).join('')}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function openLogModal(exIndex) {
+            currentExerciseIndex = exIndex;
+            const ex = activeWorkout.exercises[exIndex];
+            document.getElementById('log-exercise-name').textContent = ex.name;
+            renderLoggedSets();
+            document.getElementById('log-modal').classList.add('active');
+        }
+        
+        function hideLogModal() {
+            document.getElementById('log-modal').classList.remove('active');
+            renderWorkoutExercises();
+        }
+        
+        function renderLoggedSets() {
+            const container = document.getElementById('logged-sets-list');
+            const logged = activeSets[currentExerciseIndex]?.loggedSets || [];
+            if (logged.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>Tap to add sets</p></div>';
+                return;
+            }
+            container.innerHTML = logged.map((s, i) => `
+                <div class="logged-set ${s.completed ? 'completed' : ''}">
+                    <span class="set-number">${i + 1}</span>
+                    <span class="set-values">
+                        <span class="kg">${s.kg}kg</span>
+                        <span class="reps">${s.reps} reps</span>
+                    </span>
+                    <button class="check-btn ${s.completed ? 'completed' : ''}" onclick="toggleSet(${currentExerciseIndex}, ${i})">✓</button>
+                </div>
+            `).join('');
+        }
+        
+        function quickLogSet() {
+            const kg = document.getElementById('quick-kg').value || 0;
+            const reps = document.getElementById('quick-reps').value || 0;
+            if (!activeSets[currentExerciseIndex]) activeSets[currentExerciseIndex] = { loggedSets: [] };
+            activeSets[currentExerciseIndex].loggedSets.push({ kg: parseInt(kg), reps: parseInt(reps), completed: false });
+            document.getElementById('quick-kg').value = '';
+            document.getElementById('quick-reps').value = '';
+            renderLoggedSets();
+        }
+        
+        function toggleSet(exIndex, setIndex) {
+            if (activeSets[exIndex]?.loggedSets[setIndex]) {
+                activeSets[exIndex].loggedSets[setIndex].completed = !activeSets[exIndex].Index].completed;
+loggedSets[set                renderLoggedSets();
+            }
+        }
+        
+        function completeWorkout() {
+            history.push({
+                id: Date.now().toString(),
+                workoutName: activeWorkout.name,
+                exercises: activeWorkout.exercises.map((ex, i) => ({
+                    name: ex.name,
+                    plannedSets: ex.plannedSets,
+                    plannedReps: ex.plannedReps,
+                    loggedSets: activeSets[i]?.loggedSets || []
+                })),
+                date: new Date().toISOString()
+            });
+            saveData();
+            renderStats();
+            showHome();
+            alert('Workout completed! 💪');
+        }
+        
+        function exitWorkout() {
+            if (confirm('Exit workout? Progress will be lost.')) {
+                showHome();
+            }
+        }
+        
+        function viewHistoryItem(id) {
+            alert('Viewing history...');
+        }
         
         // Create Workout
         function showCreateWorkout() {
@@ -1237,21 +1350,24 @@
             document.getElementById('workout-name').value = '';
             document.getElementById('exercise-inputs').innerHTML = `
                 <div class="exercise-input-row">
-                    <input type="text" name="exercise[]" placeholder="Exercise name" required>
+                    <input type="text" name="exercise[]" placeholder="Exercise name" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" onblur="hideSuggestionsDelayed(this)" required>
                     <input type="number" name="sets[]" placeholder="Sets" value="3" required>
                     <input type="number" name="reps[]" placeholder="Reps" value="10" required>
                     <button type="button" class="btn-remove" onclick="this.parentElement.remove()">✕</button>
+                    <div class="suggestions-dropdown" style="display:none;"></div>
                 </div>
             `;
         }
         
-        function hideCreateWorkout() { document.getElementById('create-modal').classList.remove('active'); }
+        function hideCreateWorkout() {
+            document.getElementById('create-modal').classList.remove('active');
+        }
         
         function addExerciseField() {
             const div = document.createElement('div');
             div.className = 'exercise-input-row';
             div.innerHTML = `
-                <input type="text" name="exercise[]" placeholder="Exercise name" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" onblur="hideSuggestionsDelayed(this)">
+                <input type="text" name="exercise[]" placeholder="Exercise name" oninput="showSuggestions(this)" onfocus="showSuggestions(this)" onblur="hideSuggestionsDelayed(this)" required>
                 <input type="number" name="sets[]" placeholder="Sets" value="3" required>
                 <input type="number" name="reps[]" placeholder="Reps" value="10" required>
                 <button type="button" class="btn-remove" onclick="this.parentElement.remove()">✕</button>
@@ -1260,25 +1376,37 @@
             document.getElementById('exercise-inputs').appendChild(div);
         }
         
+        function saveNewWorkout(event) {
+            event.preventDefault();
+            const name = document.getElementById('workout-name').value.toUpperCase();
+            const exercises = [];
+            document.querySelectorAll('#exercise-inputs .exercise-input-row').forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                if (inputs[0].value.trim()) {
+                    exercises.push({ name: inputs[0].value, plannedSets: parseInt(inputs[1].value) || 3, plannedReps: parseInt(inputs[2].value) || 10 });
+                }
+            });
+            workouts.push({ id: Date.now().toString(), name, exercises, createdAt: new Date().toISOString() });
+            saveData();
+            renderWorkouts();
+            renderStats();
+            hideCreateWorkout();
+        }
+        
+        // Suggestions
         function showSuggestions(input) {
             const dropdown = input.nextElementSibling.nextElementSibling.nextElementSibling;
             if (!dropdown || !dropdown.classList.contains('suggestions-dropdown')) return;
-            
             const value = input.value.toLowerCase();
             if (value.length < 1) {
                 dropdown.style.display = 'none';
                 return;
             }
-            
-            const filtered = exerciseLibrary.filter(e => 
-                e.name.toLowerCase().includes(value)
-            ).slice(0, 8);
-            
+            const filtered = exerciseLibrary.filter(e => e.name.toLowerCase().includes(value)).slice(0, 8);
             if (filtered.length === 0) {
                 dropdown.style.display = 'none';
                 return;
             }
-            
             dropdown.innerHTML = filtered.map((e, i) => `
                 <div class="suggestion-item" onclick="selectSuggestion(this, '${e.name.replace(/'/g, "\\'")}')">
                     <span>${e.name}</span>
@@ -1288,7 +1416,6 @@
                     </span>
                 </div>
             `).join('');
-            
             dropdown.style.display = 'block';
         }
         
@@ -1307,80 +1434,15 @@
             }, 200);
         }
         
-        function saveWorkout(event) {
-            event.preventDefault();
-            const name = document.getElementById('workout-name').value.toUpperCase();
-            const exercises = [];
-            document.querySelectorAll('#exercise-inputs .exercise-input-row').forEach(row => {
-                const inputs = row.querySelectorAll('input');
-                if (inputs[0].value.trim()) {
-                    exercises.push({ name: inputs[0].value, plannedSets: parseInt(inputs[1].value) || 3, plannedReps: parseInt(inputs[2].value) || 10, sets: [] });
-                }
-            });
-            workouts.push({ id: Date.now().toString(), name, exercises, createdAt: new Date().toISOString() });
-            saveData();
-            renderWorkouts();
-            renderStats();
-            hideCreateWorkout();
-        }
-        
-        // Open Workout
-        function openWorkout(id) {
-            currentWorkoutId = id;
-            const w = workouts.find(w => w.id === id);
-            if (!w) return;
-            document.getElementById('detail-title').textContent = w.name;
-            document.getElementById('detail-date').textContent = `Created ${new Date(w.createdAt).toLocaleDateString()}`;
-            document.getElementById('detail-exercises').textContent = `${w.exercises?.length || 0} exercises`;
-            renderDetailExercises();
-            document.getElementById('home-screen').classList.add('hidden');
-            document.getElementById('workout-detail').classList.remove('hidden');
-        }
-        
-        function renderDetailExercises() {
-            const w = workouts.find(w => w.id === currentWorkoutId);
-            const container = document.getElementById('detail-exercises-list');
-            if (!w || !w.exercises.length) {
-                container.innerHTML = '<div class="empty-state"><p>No exercises yet</p></div>';
-                return;
-            }
-            container.innerHTML = w.exercises.map((ex, i) => `
-                <div class="exercise-card" onclick="logSet(${i})">
-                    <div class="exercise-thumb">🏋️</div>
-                    <div class="exercise-info">
-                        <h4>${ex.name}</h4>
-                        <div class="exercise-machine">${ex.plannedSets} sets × ${ex.plannedReps} reps</div>
-                    </div>
-                    <div class="exercise-sets">
-                        ${ex.sets && ex.sets.length ? `<span class="set-badge" style="background: var(--primary); color: #000;">${ex.sets.length} logged</span>` : ''}
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        function showQuickStart() {
-            alert('Quick Start: Select a recent workout or create new one!');
-        }
-        
-        function showWorkoutMenu(id) {
-            const w = workouts.find(w => w.id === id);
-            if (!w) return;
-            const action = confirm(`Delete "${w.name}"?`);
-            if (action) {
-                workouts = workouts.filter(x => x.id !== id);
-                saveData();
-                renderWorkouts();
-                renderStats();
-            }
-        }
-        
         // Add Exercise Modal
         function showAddExercise() {
             document.getElementById('add-exercise-modal').classList.add('active');
             renderExerciseLibrary();
         }
         
-        function hideAddExercise() { document.getElementById('add-exercise-modal').classList.remove('active'); }
+        function hideAddExercise() {
+            document.getElementById('add-exercise-modal').classList.remove('active');
+        }
         
         function setFilter(filter, el) {
             currentFilter = filter;
@@ -1389,142 +1451,31 @@
             renderExerciseLibrary();
         }
         
-        function filterExercises() {
-            renderExerciseLibrary();
-        }
-        
         function renderExerciseLibrary() {
             const search = document.getElementById('exercise-search').value.toLowerCase();
             const container = document.getElementById('exercise-library');
             let filtered = exerciseLibrary;
-            
-            if (currentFilter !== 'all') {
-                filtered = filtered.filter(e => e.muscle === currentFilter);
-            }
-            
-            if (search) {
-                filtered = filtered.filter(e => e.name.toLowerCase().includes(search) || e.machine.toLowerCase().includes(search));
-            }
-            
+            if (currentFilter !== 'all') filtered = filtered.filter(e => e.muscle === currentFilter);
+            if (search) filtered = filtered.filter(e => e.name.toLowerCase().includes(search) || e.machine.toLowerCase().includes(search));
             container.innerHTML = filtered.map((e, i) => `
-                <div class="exercise-card" onclick="addExerciseToWorkout('${e.name.replace(/'/g, "\\'")}')">
-                    <div class="exercise-thumb">${getMuscleEmoji(e.muscle)}</div>
-                    <div class="exercise-info">
-                        <h4>${e.name}</h4>
+                <div class="exercise-card" onclick="addExerciseToPlan('${e.name.replace(/'/g, "\\'")}')">
+                    <div class="exercise-header">
+                        <div class="exercise-name">${e.name}</div>
                         <div class="exercise-machine">${e.machine}</div>
                     </div>
                 </div>
             `).join('');
         }
         
-        function getMuscleEmoji(muscle) {
-            const emojis = { chest: '📐', back: '🔙', legs: '🦵', shoulders: '💪', arms: '💪', core: '🎯' };
-            return emojis[muscle] || '🏋️';
-        }
-        
-        function addExerciseToWorkout(name) {
-            const w = workouts.find(w => w.id === currentWorkoutId);
-            if (!w) return;
-            if (!w.exercises) w.exercises = [];
-            w.exercises.push({ name, plannedSets: 3, plannedReps: 10, sets: [] });
-            saveData();
-            renderDetailExercises();
-            renderWorkouts();
+        function addExerciseToPlan(name) {
+            if (!editingWorkout.exercises) editingWorkout.exercises = [];
+            editingWorkout.exercises.push({ name, plannedSets: 3, plannedReps: 10 });
+            renderEditExercises();
             hideAddExercise();
-        }
-        
-        // Log Set Modal
-        function logSet(index) {
-            currentExerciseIndex = index;
-            const w = workouts.find(w => w.id === currentWorkoutId);
-            const ex = w.exercises[index];
-            document.getElementById('log-exercise-name').textContent = ex.name;
-            renderLogSets();
-            document.getElementById('log-set-modal').classList.add('active');
-        }
-        
-        function hideLogSet() { document.getElementById('log-set-modal').classList.remove('active'); }
-        
-        function renderLogSets() {
-            const w = workouts.find(w => w.id === currentWorkoutId);
-            const ex = w.exercises[currentExerciseIndex];
-            const container = document.getElementById('log-sets');
-            
-            if (!ex.sets || ex.sets.length === 0) {
-                container.innerHTML = '<div class="empty-state"><p>No sets logged yet</p></div>';
-                return;
-            }
-            
-            container.innerHTML = ex.sets.map((s, i) => `
-                <div class="exercise-card">
-                    <div class="exercise-info">
-                        <h4>Set ${i + 1}</h4>
-                        <div class="exercise-machine">${s.weight}kg × ${s.reps} reps</div>
-                    </div>
-                    <button class="btn-remove" onclick="removeSet(${i})">✕</button>
-                </div>
-            `).join('');
-        }
-        
-        function addLogSet() {
-            const w = workouts.find(w => w.id === currentWorkoutId);
-            const ex = w.exercises[currentExerciseIndex];
-            if (!ex.sets) ex.sets = [];
-            ex.sets.push({ weight: 0, reps: 0 });
-            saveData();
-            renderLogSets();
-        }
-        
-        function quickLogSet() {
-            const w = workouts.find(w => w.id === currentWorkoutId);
-            const ex = w.exercises[currentExerciseIndex];
-            const weight = document.getElementById('quick-weight').value || 0;
-            const reps = document.getElementById('quick-reps').value || 0;
-            if (!ex.sets) ex.sets = [];
-            ex.sets.push({ weight: parseInt(weight), reps: parseInt(reps) });
-            saveData();
-            renderLogSets();
-            renderDetailExercises();
-            document.getElementById('quick-weight').value = '';
-            document.getElementById('quick-reps').value = '';
-        }
-        
-        function removeSet(index) {
-            const w = workouts.find(w => w.id === currentWorkoutId);
-            const ex = w.exercises[currentExerciseIndex];
-            ex.sets.splice(index, 1);
-            saveData();
-            renderLogSets();
-            renderDetailExercises();
-        }
-        
-        function completeWorkout() {
-            const w = workouts.find(w => w.id === currentWorkoutId);
-            if (!w) return;
-            history.push({
-                id: Date.now().toString(),
-                workoutName: w.name,
-                exercises: w.exercises,
-                date: new Date().toISOString()
-            });
-            saveData();
-            renderStats();
-            renderWorkouts();
-            showHome();
-            alert('Workout completed! 💪');
-        }
-        
-        function saveWorkoutEdits() {
-            // Just save current state and go back to home (editing done)
-            saveData();
-            renderWorkouts();
-            showHome();
-        }
-        
-        function viewHistoryItem(id) {
-            alert('Viewing history item...');
         }
         
         // Initialize
         loadData();
     </script>
+</body>
+</html>
