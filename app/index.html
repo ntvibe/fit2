@@ -1120,6 +1120,29 @@
                 <p>No workouts yet</p>
                 <p class="caption1 text-secondary mt-2">Tap + to create your first workout</p>
             </div>
+            
+            <!-- Quick Start Templates -->
+            <div class="section" id="quick-templates">
+                <div class="section-title">Quick Start</div>
+                <div class="quick-starts">
+                    <div class="quick-start-btn tap-highlight" onclick="quickStart('push')">
+                        <div class="quick-start-icon">💪</div>
+                        <div class="quick-start-label">Push Day</div>
+                    </div>
+                    <div class="quick-start-btn tap-highlight" onclick="quickStart('pull')">
+                        <div class="quick-start-icon">🦅</div>
+                        <div class="quick-start-label">Pull Day</div>
+                    </div>
+                    <div class="quick-start-btn tap-highlight" onclick="quickStart('legs')">
+                        <div class="quick-start-icon">🦵</div>
+                        <div class="quick-start-label">Legs</div>
+                    </div>
+                    <div class="quick-start-btn tap-highlight" onclick="quickStart('upper')">
+                        <div class="quick-start-icon">🔥</div>
+                        <div class="quick-start-label">Upper Body</div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <button class="fab tap-highlight" onclick="showCreateModal()">
@@ -1143,6 +1166,23 @@
         <div class="section animate-fade-in">
             <div class="workout-badge">Active</div>
             
+            <!-- Duration Timer -->
+            <div class="duration-timer">
+                <span class="material-symbols-outlined" style="color: var(--systemOrange);">timer</span>
+                <div class="duration-display" id="workout-duration">00:00</div>
+                <span class="caption1 text-secondary" style="margin-left: auto;">Elapsed time</span>
+            </div>
+            
+            <!-- Quick Rest Presets -->
+            <div style="display: flex; gap: var(--spaceS); margin-bottom: var(--spaceL); overflow-x: auto; padding-bottom: var(--spaceS);">
+                <button class="btn btn-secondary btn-sm tap-highlight" onclick="startRest(30)">30s</button>
+                <button class="btn btn-secondary btn-sm tap-highlight" onclick="startRest(45)">45s</button>
+                <button class="btn btn-secondary btn-sm tap-highlight" onclick="startRest(60)">60s</button>
+                <button class="btn btn-secondary btn-sm tap-highlight" onclick="startRest(90)">90s</button>
+                <button class="btn btn-secondary btn-sm tap-highlight" onclick="startRest(120)">2min</button>
+                <button class="btn btn-secondary btn-sm tap-highlight" onclick="startRest(180)">3min</button>
+            </div>
+            
             <div id="workout-exercises"></div>
         </div>
         
@@ -1150,11 +1190,11 @@
         <div id="rest-timer" class="rest-timer">
             <div class="rest-timer-display" id="rest-display">2:00</div>
             <div class="rest-timer-controls">
-                <button class="btn btn-secondary btn-sm" onclick="adjustRest(-30)">-30s</button>
+                <button class="btn btn-secondary btn-sm" onclick="adjustRest(-15)">-15s</button>
                 <button class="btn btn-primary btn-sm" id="rest-toggle" onclick="toggleRest()">
                     <span class="material-symbols-outlined">pause</span>
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="adjustRest(30)">+30s</button>
+                <button class="btn btn-secondary btn-sm" onclick="adjustRest(15)">+15s</button>
                 <button class="btn btn-secondary btn-sm" onclick="hideRestTimer()">
                     <span class="material-symbols-outlined">close</span>
                 </button>
@@ -1272,6 +1312,53 @@
         </div>
     </div>
     
+    <!-- WORKOUT SUMMARY MODAL -->
+    <div id="summary-modal" class="modal-overlay">
+        <div class="modal-sheet" style="max-height: 90vh;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">Workout Complete!</div>
+                </div>
+                
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <div class="summary-value text-green" id="summary-duration">00:00</div>
+                        <div class="summary-label">Duration</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value text-blue" id="summary-sets">0</div>
+                        <div class="summary-label">Sets</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value text-orange">
+                            <span id="summary-volume">0</span><span style="font-size: 14px;">kg</span>
+                        </div>
+                        <div class="summary-label">Volume</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value text-purple" id="summary-exercises">0</div>
+                        <div class="summary-label">Exercises</div>
+                    </div>
+                </div>
+                
+                <!-- Personal Bests -->
+                <div id="new-pbs" class="hidden" style="margin-bottom: var(--spaceXXL);">
+                    <label class="form-label" style="color: var(--systemOrange);">New Personal Bests! 🏆</label>
+                    <div id="pb-list" style="background: var(--bgTertiary); border-radius: var(--radiusL); padding: var(--spaceL);"></div>
+                </div>
+                
+                <!-- Exercises Completed -->
+                <label class="form-label">Exercises</label>
+                <div id="summary-exercises-list" style="background: var(--bgTertiary); border-radius: var(--radiusL); padding: var(--spaceL); margin-bottom: var(--spaceXXL);"></div>
+                
+                <button class="btn btn-primary btn-block" onclick="closeSummary()">
+                    <span class="material-symbols-outlined filled">check</span>
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <!-- TAB BAR -->
     <nav class="tab-bar">
         <div class="tab-bar-item active" onclick="showHome()">
@@ -1323,6 +1410,7 @@
         // ========== STATE ==========
         let workouts = JSON.parse(localStorage.getItem('fitbro-workouts') || '[]');
         let history = JSON.parse(localStorage.getItem('fitbro-history') || '[]');
+        let personalBests = JSON.parse(localStorage.getItem('fitbro-pbs') || '{}');
         let currentWorkout = null;
         let activeSets = {};
         let currentLogExercise = null;
@@ -1330,6 +1418,9 @@
         let restSeconds = 120;
         let restRunning = false;
         let currentFilter = 'all';
+        let workoutStartTime = null;
+        let workoutDuration = 0;
+        let durationInterval = null;
         
         // ========== INIT ==========
         function init() {
@@ -1342,6 +1433,35 @@
         function saveData() {
             localStorage.setItem('fitbro-workouts', JSON.stringify(workouts));
             localStorage.setItem('fitbro-history', JSON.stringify(history));
+            localStorage.setItem('fitbro-pbs', JSON.stringify(personalBests));
+        }
+        
+        // ========== DURATION TIMER ==========
+        function startDurationTimer() {
+            workoutStartTime = Date.now();
+            durationInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - workoutStartTime) / 1000);
+                const mins = Math.floor(elapsed / 60);
+                const secs = elapsed % 60;
+                const display = document.getElementById('workout-duration');
+                if (display) {
+                    display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                }
+                workoutDuration = elapsed;
+            }, 1000);
+        }
+        
+        function stopDurationTimer() {
+            if (durationInterval) {
+                clearInterval(durationInterval);
+                durationInterval = null;
+            }
+        }
+        
+        function formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
         
         // ========== RENDER ==========
@@ -1452,6 +1572,8 @@
         
         // ========== NAVIGATION ==========
         function showHome() {
+            stopDurationTimer();
+            hideRestTimer();
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('home-screen').classList.add('active');
             document.querySelectorAll('.tab-bar-item').forEach(i => i.classList.remove('active'));
@@ -1478,29 +1600,100 @@
             activeSets = {};
             currentWorkout.exercises.forEach((_, i) => activeSets[i] = []);
             document.getElementById('workout-title').textContent = currentWorkout.name;
+            document.getElementById('workout-duration').textContent = '00:00';
             renderWorkoutExercises();
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('workout-screen').classList.add('active');
+            startDurationTimer();
         }
         
         function exitWorkout() {
             if (confirm('Exit workout? Progress will be lost.')) {
+                stopDurationTimer();
+                hideRestTimer();
                 showHome();
             }
         }
         
         function completeWorkout() {
             if (!currentWorkout) return;
+            stopDurationTimer();
+            
+            // Calculate stats
+            let totalSets = 0;
+            let totalVolume = 0;
+            let exerciseData = [];
+            let newPBs = [];
+            
+            currentWorkout.exercises.forEach((ex, i) => {
+                const sets = activeSets[i] || [];
+                const exerciseVolume = sets.reduce((sum, s) => sum + (s.kg || 0), 0);
+                totalSets += sets.length;
+                totalVolume += exerciseVolume;
+                
+                // Check for personal bests
+                const pbKey = ex.name.toLowerCase();
+                const maxKg = sets.length > 0 ? Math.max(...sets.map(s => s.kg)) : 0;
+                const currentPB = personalBests[pbKey] || 0;
+                
+                if (maxKg > currentPB && maxKg > 0) {
+                    personalBests[pbKey] = maxKg;
+                    newPBs.push({ name: ex.name, weight: maxKg });
+                }
+                
+                exerciseData.push({ name: ex.name, sets: sets.length, volume: exerciseVolume });
+            });
+            
+            // Show summary modal
+            document.getElementById('summary-duration').textContent = formatDuration(workoutDuration);
+            document.getElementById('summary-sets').textContent = totalSets;
+            document.getElementById('summary-volume').textContent = totalVolume.toLocaleString();
+            document.getElementById('summary-exercises').textContent = currentWorkout.exercises.length;
+            
+            // New PBs
+            const pbSection = document.getElementById('new-pbs');
+            const pbList = document.getElementById('pb-list');
+            if (newPBs.length > 0) {
+                pbSection.classList.remove('hidden');
+                pbList.innerHTML = newPBs.map(pb => `
+                    <div class="exercise-pb">
+                        <span class="pb-exercise">${pb.name}</span>
+                        <span class="pb-stat">
+                            <span class="pb-value">${pb.weight}kg</span>
+                        </span>
+                    </div>
+                `).join('');
+            } else {
+                pbSection.classList.add('hidden');
+            }
+            
+            // Exercise list
+            document.getElementById('summary-exercises-list').innerHTML = exerciseData.map(ex => `
+                <div class="exercise-pb">
+                    <span class="pb-exercise">${ex.name}</span>
+                    <span class="pb-stat">
+                        <span class="text-secondary">${ex.sets} sets</span>
+                        <span class="pb-value">${ex.volume.toLocaleString()}kg</span>
+                    </span>
+                </div>
+            `).join('');
+            
+            // Save history
             history.unshift({
                 id: Date.now().toString(),
                 name: currentWorkout.name,
-                exercises: currentWorkout.exercises.map((ex, i) => ({
-                    name: ex.name,
-                    sets: activeSets[i] || []
-                })),
+                exercises: exerciseData,
+                duration: workoutDuration,
+                volume: totalVolume,
                 date: new Date().toISOString()
             });
+            
             saveData();
+            document.getElementById('summary-modal').classList.add('active');
+        }
+        
+        function closeSummary() {
+            document.getElementById('summary-modal').classList.remove('active');
             showHome();
             showToast('Workout completed! 💪', 'success');
         }
@@ -1577,6 +1770,70 @@
             const mins = Math.floor(restSeconds / 60);
             const secs = restSeconds % 60;
             document.getElementById('rest-display').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        // ========== QUICK START ==========
+        const quickStartTemplates = {
+            push: {
+                name: 'PUSH',
+                exercises: [
+                    { name: 'Barbell Bench Press', sets: 4, reps: 8 },
+                    { name: 'Barbell Overhead Press', sets: 3, reps: 10 },
+                    { name: 'Incline Dumbbell Press', sets: 3, reps: 10 },
+                    { name: 'Lateral Raise', sets: 3, reps: 12 },
+                    { name: 'Tricep Pushdown', sets: 3, reps: 12 }
+                ]
+            },
+            pull: {
+                name: 'PULL',
+                exercises: [
+                    { name: 'Barbell Deadlift', sets: 4, reps: 6 },
+                    { name: 'Barbell Row', sets: 3, reps: 10 },
+                    { name: 'Pull-ups', sets: 3, reps: 8 },
+                    { name: 'Lat Pulldown', sets: 3, reps: 10 },
+                    { name: 'Barbell Curl', sets: 3, reps: 10 }
+                ]
+            },
+            legs: {
+                name: 'LEGS',
+                exercises: [
+                    { name: 'Barbell Back Squat', sets: 4, reps: 8 },
+                    { name: 'Romanian Deadlift', sets: 3, reps: 10 },
+                    { name: 'Leg Press', sets: 3, reps: 12 },
+                    { name: 'Leg Extension', sets: 3, reps: 12 },
+                    { name: 'Leg Curl', sets: 3, reps: 12 },
+                    { name: 'Calf Raise', sets: 4, reps: 15 }
+                ]
+            },
+            upper: {
+                name: 'UPPER BODY',
+                exercises: [
+                    { name: 'Barbell Bench Press', sets: 4, reps: 8 },
+                    { name: 'Barbell Row', sets: 4, reps: 8 },
+                    { name: 'Barbell Overhead Press', sets: 3, reps: 10 },
+                    { name: 'Pull-ups', sets: 3, reps: 8 },
+                    { name: 'Dips', sets: 3, reps: 10 }
+                ]
+            }
+        };
+        
+        function quickStart(type) {
+            const template = quickStartTemplates[type];
+            if (!template) return;
+            
+            const workout = {
+                id: Date.now().toString(),
+                name: template.name,
+                exercises: template.exercises.map(e => ({ name: e.name, sets: e.sets, reps: e.reps }))
+            };
+            
+            workouts.push(workout);
+            saveData();
+            renderWorkouts();
+            renderStats();
+            
+            // Start the workout immediately
+            startWorkout(workout.id);
         }
         
         // ========== CREATE MODAL ==========
@@ -1681,3 +1938,222 @@
     </script>
 </body>
 </html>
+
+        /* ========== PROGRESS RINGS ========== */
+        .progress-ring-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto var(--spaceS);
+        }
+        
+        .progress-ring-bg {
+            fill: none;
+            stroke: var(--separator);
+            stroke-width: 6;
+        }
+        
+        .progress-ring-fill {
+            fill: none;
+            stroke: var(--systemGreen);
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-dasharray: 220;
+            stroke-dashoffset: 220;
+            transition: stroke-dashoffset 0.8s ease-out;
+        }
+        
+        .progress-ring-fill.blue { stroke: var(--systemBlue); }
+        .progress-ring-fill.orange { stroke: var(--systemOrange); }
+        .progress-ring-fill.purple { stroke: var(--systemPurple); }
+        
+        .progress-ring-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            font-weight: 700;
+        }
+        
+        /* ========== WORKOUT SUMMARY ========== */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spaceM);
+            margin-bottom: var(--spaceXXL);
+        }
+        
+        .summary-card {
+            background: var(--bgTertiary);
+            border-radius: var(--radiusL);
+            padding: var(--spaceL);
+            text-align: center;
+        }
+        
+        .summary-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: var(--spaceXS);
+        }
+        
+        .summary-label {
+            font-size: 12px;
+            color: var(--textSecondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* ========== DURATION TIMER ========== */
+        .duration-timer {
+            display: flex;
+            align-items: center;
+            gap: var(--spaceS);
+            background: var(--bgTertiary);
+            border-radius: var(--radiusL);
+            padding: var(--spaceM) var(--spaceL);
+            margin-bottom: var(--spaceL);
+        }
+        
+        .duration-display {
+            font-size: 24px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        /* ========== PERSONAL BESTS ========== */
+        .pb-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, var(--systemOrange), #FF6B00);
+            color: #000;
+            padding: 4px 10px;
+            border-radius: var(--radiusSuper);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .pb-badge::before {
+            content: '🏆';
+        }
+        
+        /* ========== VOLUME STATS ========== */
+        .volume-display {
+            display: flex;
+            align-items: baseline;
+            gap: var(--spaceXS);
+        }
+        
+        .volume-value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .volume-unit {
+            font-size: 14px;
+            color: var(--textSecondary);
+        }
+        
+        /* ========== EXERCISE PB ========== */
+        .exercise-pb {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spaceS) 0;
+            border-bottom: 1px solid var(--separator);
+        }
+        
+        .exercise-pb:last-child {
+            border-bottom: none;
+        }
+        
+        .pb-stat {
+            text-align: right;
+        }
+        
+        .pb-exercise {
+            font-weight: 500;
+        }
+        
+        .pb-value {
+            font-size: 14px;
+            color: var(--systemOrange);
+            font-weight: 600;
+        }
+        
+        /* ========== WORKOUT TEMPLATES ========== */
+        .template-card {
+            background: linear-gradient(135deg, var(--bgSecondary), var(--bgTertiary));
+            border-radius: var(--radiusXXL);
+            padding: var(--spaceXXL);
+            margin-bottom: var(--spaceM);
+            border: 1px solid var(--separator);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .template-card:active {
+            transform: scale(0.98);
+        }
+        
+        .template-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--systemBlue), #0066FF);
+            border-radius: var(--radiusL);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--spaceM);
+        }
+        
+        .template-icon .material-symbols-outlined {
+            font-size: 24px;
+            color: #FFFFFF;
+        }
+        
+        .template-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: var(--spaceXS);
+        }
+        
+        .template-desc {
+            font-size: 14px;
+            color: var(--textSecondary);
+        }
+        
+        /* ========== QUICK START ========== */
+        .quick-starts {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spaceM);
+            margin-bottom: var(--spaceXXL);
+        }
+        
+        .quick-start-btn {
+            background: var(--bgSecondary);
+            border-radius: var(--radiusL);
+            padding: var(--spaceL);
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid var(--separator);
+            transition: all 0.2s;
+        }
+        
+        .quick-start-btn:active {
+            transform: scale(0.96);
+            background: var(--bgTertiary);
+        }
+        
+        .quick-start-icon {
+            font-size: 28px;
+            margin-bottom: var(--spaceS);
+        }
+        
+        .quick-start-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
