@@ -1820,13 +1820,20 @@
                 <label class="form-label">Logged Sets</label>
                 <div id="logged-sets"></div>
                 
-                <div class="quick-log">
-                    <input type="number" id="quick-kg" class="input" placeholder="kg">
-                    <input type="number" id="quick-reps" class="input" placeholder="reps">
-                    <button class="btn btn-success" onclick="quickLog()">
-                        <span class="material-symbols-outlined filled">add</span>
+                <!-- QUICK LOG - Big buttons -->
+                <div style="display: flex; gap: var(--spaceS); margin-top: var(--spaceL);">
+                    <input type="number" id="quick-kg" class="input" placeholder="kg" style="flex: 1; height: 56px; font-size: 20px; text-align: center; font-weight: 700;">
+                    <input type="number" id="quick-reps" class="input" placeholder="reps" style="flex: 1; height: 56px; font-size: 20px; text-align: center; font-weight: 700;">
+                    <button class="btn btn-success" onclick="quickLog()" style="height: 56px; width: 80px; font-size: 24px;">
+                        ✓
                     </button>
                 </div>
+                
+                <!-- Quick Rest FAB -->
+                <button class="btn btn-secondary btn-block mt-3" onclick="startRestFromDefaults()" style="height: 48px;">
+                    <span class="material-symbols-outlined">timer</span>
+                    Rest (<span id="default-rest-display">90</span>s)
+                </button>
                 
                 <!-- Workout Notes -->
                 <div class="form-group mt-3">
@@ -2090,11 +2097,13 @@
         let workouts = JSON.parse(localStorage.getItem('fitbro-workouts') || '[]');
         let history = JSON.parse(localStorage.getItem('fitbro-history') || '[]');
         let personalBests = JSON.parse(localStorage.getItem('fitbro-pbs') || '{}');
+        let lastWeights = JSON.parse(localStorage.getItem('fitbro-last-weights') || '{}'); // { "exercise name": {kg, reps} }
+        let defaultRest = parseInt(localStorage.getItem('fitbro-default-rest') || '90');
         let currentWorkout = null;
         let activeSets = {};
         let currentLogExercise = null;
         let restInterval = null;
-        let restSeconds = 120;
+        let restSeconds = defaultRest;
         let restRunning = false;
         let currentFilter = 'all';
         let workoutStartTime = null;
@@ -2116,6 +2125,8 @@
             localStorage.setItem('fitbro-workouts', JSON.stringify(workouts));
             localStorage.setItem('fitbro-history', JSON.stringify(history));
             localStorage.setItem('fitbro-pbs', JSON.stringify(personalBests));
+            localStorage.setItem('fitbro-last-weights', JSON.stringify(lastWeights));
+            localStorage.setItem('fitbro-default-rest', String(defaultRest));
         }
         
         // ========== DURATION TIMER ==========
@@ -2571,8 +2582,19 @@
             currentLogExercise = index;
             currentSetType = 'working';
             currentRPE = 10;
-            document.getElementById('log-exercise-name').textContent = currentWorkout.exercises[index].name;
+            const exerciseName = currentWorkout.exercises[index].name;
+            document.getElementById('log-exercise-name').textContent = exerciseName;
             document.getElementById('workout-notes').value = workoutNotes;
+            
+            // Load last weights for this exercise
+            const last = lastWeights[exerciseName.toLowerCase()];
+            if (last) {
+                document.getElementById('quick-kg').value = last.kg || '';
+                document.getElementById('quick-reps').value = last.reps || '';
+            } else {
+                document.getElementById('quick-kg').value = '';
+                document.getElementById('quick-reps').value = '';
+            }
             
             // Reset selectors
             document.querySelectorAll('.set-type-btn').forEach(b => b.classList.remove('selected'));
@@ -2609,6 +2631,14 @@
         function quickLog() {
             const kg = parseInt(document.getElementById('quick-kg').value) || 0;
             const reps = parseInt(document.getElementById('quick-reps').value) || 0;
+            
+            if (kg === 0 && reps === 0) return;
+            
+            // Remember last weights for this exercise
+            const exerciseName = currentWorkout.exercises[currentLogExercise].name;
+            lastWeights[exerciseName.toLowerCase()] = { kg, reps };
+            saveData();
+            
             if (!activeSets[currentLogExercise]) activeSets[currentLogExercise] = [];
             activeSets[currentLogExercise].push({ 
                 kg, 
@@ -2620,6 +2650,9 @@
             document.getElementById('quick-kg').value = '';
             document.getElementById('quick-reps').value = '';
             renderLoggedSets();
+            
+            // Auto-start rest timer
+            startRestFromDefaults();
         }
         
         function toggleSet(index) {
@@ -2630,6 +2663,10 @@
         }
         
         // ========== REST TIMER ==========
+        function startRestFromDefaults() {
+            startRest(defaultRest);
+        }
+        
         function startRest(seconds) {
             restSeconds = seconds;
             restRunning = true;
