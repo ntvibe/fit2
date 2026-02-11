@@ -2,25 +2,44 @@
 
 A progressive web app (PWA) for fitness tracking.
 
+## 🚀 Quick Start
+
+**Live Demo:** https://ntvibe.github.io/fit2/app/
+
+The app works directly in your browser with no server required!
+
 ## Features
 
-- Workout logging and tracking
-- Exercise database
-- Progress visualization
-- Installable on Android and iOS
+- 📱 **Installable** - Add to home screen on Android/iOS
+- 💾 **localStorage** - Your data stays on your device
+- 🏋️ **Workout Plans** - Create and manage custom workouts
+- 📊 **Progress Tracking** - Track your fitness journey
+- 🔒 **Privacy First** - No database, no cloud sync, no accounts
+
+## Development
+
+```bash
+# Open in browser directly
+open app/index.html
+
+# Or serve locally
+npx serve app
+```
+
+## Deployment to GitHub Pages
+
+The app is ready for GitHub Pages deployment:
+
+1. Repository Settings → Pages
+2. Source: Deploy from `main` branch
+3. Folder: `/app` (or move contents of app/ to root)
 
 ## Tech Stack
 
-- React + Vite
+- Vanilla HTML/CSS/JavaScript
 - PWA (Progressive Web App)
-- Offline support
-
-## Getting Started
-
-```bash
-npm install
-npm run dev
-```
+- Service Worker for offline support
+- localStorage for persistence
 
 ## License
 
