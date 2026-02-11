@@ -2215,14 +2215,106 @@
         function renderWorkoutExercises() {
             const container = document.getElementById('workout-exercises');
             container.innerHTML = currentWorkout.exercises.map((ex, i) => `
-                <div class="exercise-item tap-highlight" onclick="openLogModal(${i})">
+                <div class="exercise-item tap-highlight" 
+                     onclick="openLogModal(${i})"
+                     ontouchstart="handleTouchStart(event, ${i})"
+                     ontouchmove="handleTouchMove(event)"
+                     ontouchend="handleTouchEnd(event, ${i})"
+                     data-touch-start-x="0"
+                     data-swiped="false">
                     <div class="exercise-info">
                         <div class="exercise-name">${ex.name}</div>
                         <div class="exercise-detail">${ex.sets} sets × ${ex.reps} reps${activeSets[i]?.length ? ' • ' + activeSets[i].length + ' logged' : ''}</div>
                     </div>
-                    <span class="material-symbols-outlined" style="color: var(--textSecondary)">chevron_right</span>
+                    <div style="display: flex; align-items: center; gap: var(--spaceS);">
+                        ${activeSets[i]?.length ? `
+                            <span style="background: var(--systemGreen); color: #000; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                                ${activeSets[i].length}/${ex.sets}
+                            </span>
+                        ` : ''}
+                        <span class="material-symbols-outlined" style="color: var(--textSecondary)">chevron_right</span>
+                    </div>
                 </div>
             `).join('');
+        }
+        
+        // ========== SWIPE GESTURES ==========
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchStartTime = 0;
+        
+        function handleTouchStart(e, index) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            touchStartTime = Date.now();
+        }
+        
+        function handleTouchMove(e) {
+            // Prevent scrolling while swiping exercises
+            if (Math.abs(e.touches[0].clientX - touchStartX) > 10) {
+                e.preventDefault();
+            }
+        }
+        
+        function handleTouchEnd(e, index) {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const touchDuration = Date.now() - touchStartTime;
+            
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = Math.abs(touchEndY - touchStartY);
+            
+            // Ignore if mostly vertical scroll
+            if (deltaY > Math.abs(deltaX) * 1.5) return;
+            
+            // Swipe right = quick log
+            if (deltaX > 80 && touchDuration < 500) {
+                quickLogWithDefaults(index);
+                showToast('✓ Set logged', 'success');
+            }
+            
+            // Swipe left = start rest
+            if (deltaX < -80 && touchDuration < 500) {
+                startRestFromDefaults();
+                showToast('⏱ Rest started', 'success');
+            }
+        }
+        
+        function quickLogWithDefaults(index) {
+            // Get last weights or defaults
+            const exerciseName = currentWorkout.exercises[index].name;
+            const last = lastWeights[exerciseName.toLowerCase()];
+            const kg = last?.kg || 40;
+            const reps = last?.reps || 8;
+            
+            if (!activeSets[index]) activeSets[index] = [];
+            activeSets[index].push({ 
+                kg, 
+                reps, 
+                completed: false,
+                type: 'working',
+                rpe: 10
+            });
+            
+            // Remember
+            lastWeights[exerciseName.toLowerCase()] = { kg, reps };
+            saveData();
+            
+            // Haptic feedback
+            if (navigator.vibrate) navigator.vibrate(50);
+            
+            renderWorkoutExercises();
+        }
+        
+        // Haptic helper
+        function haptic(type = 'light') {
+            if (!navigator.vibrate) return;
+            const patterns = {
+                light: 10,
+                medium: 30,
+                heavy: 50
+            };
+            navigator.vibrate(patterns[type] || 10);
         }
         
         function renderLoggedSets() {
@@ -2575,6 +2667,7 @@
             document.getElementById('summary-modal').classList.remove('active');
             showHome();
             showToast('Workout completed! 💪', 'success');
+            if (navigator.vibrate) navigator.vibrate([50, 50, 100]); // Victory vibration
         }
         
         // ========== LOGGING ==========
@@ -2653,12 +2746,16 @@
             
             // Auto-start rest timer
             startRestFromDefaults();
+            
+            // Haptic feedback
+            if (navigator.vibrate) navigator.vibrate(30);
         }
         
         function toggleSet(index) {
             if (activeSets[currentLogExercise][index]) {
                 activeSets[currentLogExercise][index].completed = !activeSets[currentLogExercise][index].completed;
                 renderLoggedSets();
+                if (navigator.vibrate) navigator.vibrate(20);
             }
         }
         
@@ -2864,6 +2961,10 @@
             toast.className = `toast ${type}`;
             toast.innerHTML = `<span class="material-symbols-outlined">${type === 'success' ? 'check_circle' : 'error'}</span> ${message}`;
             document.body.appendChild(toast);
+            
+            // Haptic
+            if (navigator.vibrate) navigator.vibrate(type === 'success' ? 20 : 50);
+            
             setTimeout(() => toast.classList.add('visible'), 10);
             setTimeout(() => {
                 toast.classList.remove('visible');
