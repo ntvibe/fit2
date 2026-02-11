@@ -1935,54 +1935,21 @@
         </div>
     </div>
     </div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="log-exercise-name">Leg Press</h2>
-                <button class="modal-close" onclick="hideLogModal()">✕</button>
-            </div>
-            
-            <!-- Quick Rest Buttons -->
-            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                <button class="btn btn-outline" onclick="startRestTimer(60); hideLogModal();" style="flex: 1;">⏱️ 60s</button>
-                <button class="btn btn-outline" onclick="startRestTimer(90); hideLogModal();" style="flex: 1;">⏱️ 90s</button>
-                <button class="btn btn-outline" onclick="startRestTimer(120); hideLogModal();" style="flex: 1;">⏱️ 2min</button>
-            </div>
-            
-            <div id="logged-sets-list"></div>
-            
-            <div class="quick-log">
-                <input type="number" id="quick-kg" placeholder="kg">
-                <input type="number" id="quick-reps" placeholder="reps">
-                <button class="btn btn-success" onclick="quickLogSet()">✓</button>
-            </div>
-            
-            <button class="btn btn-outline btn-block" onclick="hideLogModal()" style="margin-top: 1rem;">
-                Close
-            </button>
-        </div>
     </div>
     
     <nav class="bottom-nav">
-        <a href="#" class="nav-item active" onclick="showHome()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
-            Home
-        </a>
-        <a href="#" class="nav-item" onclick="showHistory()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-            </svg>
-            History
-        </a>
-        <a href="#" class="nav-item" onclick="showSettings()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
-            </svg>
-            Settings
-        </a>
+        <div class="nav-item active tap-bounce" onclick="showHome()">
+            <span class="material-symbols-outlined filled">home</span>
+            <span>Home</span>
+        </div>
+        <div class="nav-item tap-bounce" onclick="showHistory()">
+            <span class="material-symbols-outlined">history</span>
+            <span>History</span>
+        </div>
+        <div class="nav-item tap-bounce" onclick="showStats()">
+            <span class="material-symbols-outlined">insights</span>
+            <span>Stats</span>
+        </div>
     </nav>
     
     <script>
