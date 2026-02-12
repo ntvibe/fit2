@@ -1,5 +1,5 @@
 // Fit2 Service Worker for Offline Support
-const CACHE_NAME = 'fit2-v3';
+const CACHE_NAME = 'fit2-v4';
 const urlsToCache = [
     '/',
     '/index.html',
