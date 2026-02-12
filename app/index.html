@@ -502,7 +502,7 @@
         .screen {
             display: none;
             min-height: 100vh;
-            padding: var(--spaceXXL) var(--spaceXXL) calc(100px + env(safe-area-inset-bottom, 20px));
+            padding: var(--spaceXL) var(--spaceXXL) calc(100px + env(safe-area-inset-bottom, 20px));
         }
         
         .screen.active {
@@ -518,26 +518,31 @@
         }
         
         .stat-card {
-            background: var(--bgSecondary);
-            border-radius: var(--radiusXXL);
-            padding: var(--spaceXXL) var(--spaceM);
+            background: var(--bgCard);
+            border-radius: var(--radiusL);
+            padding: var(--spaceL) var(--spaceM);
             text-align: center;
             border: 1px solid var(--separator);
         }
         
         .stat-card:active {
-            transform: scale(0.96);
+            transform: scale(0.97);
         }
         
         .stat-value {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
             margin-bottom: var(--spaceXS);
+            letter-spacing: -0.5px;
         }
         
         .stat-label {
             font-size: 12px;
             color: var(--textSecondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -661,13 +666,14 @@
         }
         
         .modal-title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
+            letter-spacing: -0.3px;
         }
         
         .modal-close {
-            width: 44px;
-            height: 44px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: var(--bgTertiary);
             border: none;
@@ -685,7 +691,7 @@
         
         /* ========== FORM ========== */
         .form-group {
-            margin-bottom: var(--spaceXXL);
+            margin-bottom: var(--spaceXL);
         }
         
         .form-label {
@@ -1092,12 +1098,16 @@
             z-index: 3000;
             opacity: 0;
             transition: all 0.3s;
+            font-weight: 500;
         }
         .toast.visible {
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
-        .toast.success { border-left: 4px solid var(--systemGreen); }
+        .toast.success { 
+            border-left: 4px solid var(--accent);
+            background: var(--accentMuted);
+        }
         .toast.error { border-left: 4px solid var(--systemRed); }
         
         /* Swipe Actions */
