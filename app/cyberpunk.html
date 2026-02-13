@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CYBERPUNK 2087 | Neural Interface</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Michroma&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cyan: #00f5ff;
+            --magenta: #ff00ff;
+            --yellow: #f0ff00;
+            --red: #ff2a6d;
+            --green: #05ffa1;
+            --blue: #0057ff;
+            --dark: #030408;
+            --dark2: #0a0a15;
+            --glass: rgba(255,255,255,0.03);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background: var(--dark);
+            font-family: 'Rajdhani', sans-serif;
+        }
+        
+        #webglCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+        #particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        #matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; opacity: 0.4; pointer-events: none; }
+        
+        #ui { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; pointer-events: none; }
+        #ui > * { pointer-events: auto; }
+        
+        header {
+            position: fixed; top: 0; left: 0; right: 0; height: 70px;
+            background: linear-gradient(180deg, rgba(3,4,8,0.98) 0%, rgba(3,4,8,0.85) 100%);
+            backdrop-filter: blur(30px);
+            border-bottom: 1px solid rgba(0,245,255,0.2);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 25px; z-index: 1000;
+        }
+        
+        .logo {
+            font-family: 'Michroma', sans-serif; font-size: 1.5rem;
+            background: linear-gradient(90deg, var(--cyan), var(--magenta), var(--yellow));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            letter-spacing: 0.3em; animation: logoGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes logoGlow {
+            0%, 100% { filter: drop-shadow(0 0 10px var(--cyan)); }
+            33% { filter: drop-shadow(0 0 20px var(--magenta)); }
+            66% { filter: drop-shadow(0 0 20px var(--yellow)); }
+        }
+        
+        .header-stats { display: flex; gap: 25px; }
+        .stat { text-align: center; }
+        .stat-label { font-size: 0.6rem; color: rgba(255,255,255,0.4); letter-spacing: 0.15em; font-family: 'Share Tech Mono', monospace; }
+        .stat-value { font-family: 'Orbitron', sans-serif; font-size: 1rem; color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
+        
+        .nav-panel {
+            position: fixed; left: 0; top: 70px; bottom: 0; width: 80px;
+            background: rgba(3,4,8,0.9); backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(0,245,255,0.1);
+            display: flex; flex-direction: column; align-items: center;
+            padding: 20px 0; gap: 15px; z-index: 999;
+        }
+        
+        .nav-icon {
+            width: 50px; height: 50px; background: var(--glass);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; cursor: pointer; transition: all 0.3s ease; position: relative;
+        }
+        
+        .nav-icon:hover, .nav-icon.active {
+            background: rgba(0,245,255,0.15); border-color: var(--cyan);
+            box-shadow: 0 0 25px rgba(0,245,255,0.3), inset 0 0 20px rgba(0,245,255,0.1);
+            transform: scale(1.1);
+        }
+        
+        .nav-icon::after {
+            content: attr(data-label); position: absolute; left: 60px;
+            background: var(--dark2); padding: 6px 12px; border-radius: 6px;
+            font-size: 0.7rem; color: var(--cyan); white-space: nowrap;
+            opacity: 0; transform: translateX(-10px); transition: all 0.3s ease;
+            border: 1px solid var(--cyan);
+        }
+        .nav-icon:hover::after { opacity: 1; transform: translateX(0); }
+        
+        #main {
+            position: fixed; left: 80px; top: 70px; right: 0; bottom: 0;
+            overflow-y: auto; padding: 20px;
+        }
+        
+        .page { display: none; animation: pageIn 0.5s ease; }
+        .page.active { display: block; }
+        @keyframes pageIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        .card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid rgba(0,245,255,0.15); border-radius: 16px; padding: 20px;
+            backdrop-filter: blur(10px); margin-bottom: 20px; transition: all 0.3s ease;
+        }
+        .card:hover { border-color: rgba(0,245,255,0.4); box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 30px rgba(0,245,255,0.1); }
+        
+        .card-title {
+            font-family: 'Orbitron', sans-serif; font-size: 0.7rem;
+            color: rgba(255,255,255,0.5); letter-spacing: 0.2em;
+            margin-bottom: 15px; display: flex; align-items: center; gap: 10px;
+        }
+        .card-title::before { content: ''; width: 8px; height: 8px; background: var(--cyan); border-radius: 2px; box-shadow: 0 0 10px var(--cyan); }
+        
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        
+        @media (max-width: 1200px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } .grid-3 { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 800px) { .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; } .nav-panel { width: 60px; } #main { left: 60px; } }
+        
+        .metric-card { text-align: center; padding: 25px; }
+        .metric-value {
+            font-family: 'Orbitron', sans-serif; font-size: 3rem; font-weight: 700;
+            background: linear-gradient(180deg, var(--cyan), var(--green));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0,245,255,0.5);
+        }
+        .metric-label { font-size: 0.8rem; color: rgba(255,255,255,0.5); letter-spacing: 0.15em; margin-top: 5px; }
+        .metric-change { font-size: 0.75rem; margin-top: 8px; }
+        .metric-change.positive { color: var(--green); }
+        
+        .chart-area { height: 200px; position: relative; margin-top: 15px; }
+        canvas.chart { width: 100%; height: 100%; }
+        
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { text-align: left; padding: 12px; font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; color: rgba(255,255,255,0.5); border-bottom: 1px solid rgba(0,245,255,0.2); letter-spacing: 0.1em; }
+        .data-table td { padding: 12px; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .data-table tr:hover td { background: rgba(0,245,255,0.05); }
+        
+        .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; animation: statusPulse 2s ease-in-out infinite; }
+        .status-dot.online { background: var(--green); box-shadow: 0 0 10px var(--green); }
+        @keyframes statusPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        .progress-item { margin-bottom: 15px; }
+        .progress-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.8rem; }
+        .progress-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--cyan), var(--green)); transition: width 0.5s ease; position: relative; }
+        .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: shimmer 2s infinite; }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        
+        .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .cyber-btn {
+            aspect-ratio: 1; background: linear-gradient(135deg, rgba(0,245,255,0.1), rgba(255,0,255,0.1));
+            border: 1px solid rgba(0,245,255,0.3); border-radius: 12px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 8px; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden;
+        }
+        .cyber-btn::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, var(--cyan), transparent 30%); animation: rotate 4s linear infinite; opacity: 0; transition: opacity 0.3s ease; }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+        .cyber-btn:hover::before { opacity: 0.3; }
+        .cyber-btn:hover { transform: translateY(-5px) scale(1.02); border-color: var(--cyan); box-shadow: 0 15px 40px rgba(0,245,255,0.3); }
+        .cyber-btn.active { background: linear-gradient(135deg, rgba(0,245,255,0.3), rgba(5,255,161,0.3)); border-color: var(--green); box-shadow: 0 0 30px rgba(5,255,161,0.4); }
+        .cyber-btn .icon { font-size: 1.8rem; }
+        .cyber-btn .label { font-size: 0.65rem; letter-spacing: 0.1em; color: rgba(255,255,255,0.7); }
+        
+        .slider-group { margin-bottom: 20px; }
+        .slider-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.85rem; }
+        .cyber-slider { width: 100%; height: 12px; -webkit-appearance: none; background: rgba(255,255,255,0.1); border-radius: 6px; outline: none; }
+        .cyber-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: linear-gradient(135deg, var(--cyan), var(--magenta)); border-radius: 50%; cursor: pointer; box-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(0,245,255,0.3); }
+        
+        .terminal-window { background: rgba(0,0,0,0.8); border: 1px solid rgba(0,245,255,0.3); border-radius: 12px; padding: 15px; height: 400px; overflow-y: auto; font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; }
+        .terminal-line { margin-bottom: 5px; animation: typeIn 0.1s ease; }
+        @keyframes typeIn { from { opacity: 0; } to { opacity: 1; } }
+        .terminal-prompt { color: var(--cyan); }
+        .terminal-out { color: rgba(255,255,255,0.7); }
+        .terminal-success { color: var(--green); }
+        
+        #scene3d { width: 100%; height: 400px; position: relative; perspective: 1000px; }
+        .scene-container { width: 100%; height: 100%; transform-style: preserve-3d; animation: sceneRotate 20s linear infinite; }
+        @keyframes sceneRotate { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+        
+        .hologram { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 200px; border: 2px solid var(--cyan); animation: hologramPulse 2s ease-in-out infinite; }
+        @keyframes hologramPulse { 0%, 100% { transform: translate(-50%, -50%) rotateX(0deg) scale(1); opacity: 0.8; } 50% { transform: translate(-50%, -50%) rotateX(10deg) scale(1.1); opacity: 1; } }
+        .hologram::before, .hologram::after { content: ''; position: absolute; border: 2px solid var(--magenta); }
+        .hologram::before { top: 20px; left: 20px; right: 20px; bottom: 20px; animation: hologramPulse 2s ease-in-out infinite 0.3s; }
+        .hologram::after { top: 40px; left: 40px; right: 40px; bottom: 40px; border-color: var(--yellow); animation: hologramPulse 2s ease-in-out infinite 0.6s; }
+        
+        .radar-sweep { width: 250px; height: 250px; border-radius: 50%; border: 2px solid rgba(0,245,255,0.3); position: relative; margin: 20px auto; overflow: hidden; }
+        .radar-sweep::before { content: ''; position: absolute; top: 50%; left: 50%; width: 50%; height: 2px; background: linear-gradient(90deg, transparent, var(--cyan)); transform-origin: left center; animation: radarSweep 3s linear infinite; }
+        @keyframes radarSweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .radar-rings { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 1px solid rgba(0,245,255,0.2); border-radius: 50%; }
+        .radar-ring-1 { width: 80px; height: 80px; }
+        .radar-ring-2 { width: 160px; height: 160px; }
+        .radar-ring-3 { width: 240px; height: 240px; }
+        .radar-dot { position: absolute; width: 10px; height: 10px; background: var(--green); border-radius: 50%; box-shadow: 0 0 15px var(--green); animation: radarPing 2s ease-out infinite; }
+        @keyframes radarPing { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
+        
+        .cyber-map { height: 350px; background: linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px); background-size: 20px 20px; position: relative; border-radius: 12px; overflow: hidden; }
+        .map-point { position: absolute; width: 16px; height: 16px; background: var(--cyan); border-radius: 50%; cursor: pointer; transition: all 0.3s ease; }
+        .map-point::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 30px; height: 30px; border: 2px solid var(--cyan); border-radius: 50%; animation: mapPulse 2s ease-out infinite; }
+        @keyframes mapPulse { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2); opacity: 0; } }
+        .map-point:hover { transform: scale(1.5); background: var(--magenta); }
+        
+        .gauge-container { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .gauge { width: 150px; text-align: center; }
+        .gauge-ring { width: 120px; height: 120px; border-radius: 50%; border: 8px solid rgba(255,255,255,0.1); position: relative; margin: 0 auto 10px; }
+        .gauge-ring::before { content: ''; position: absolute; top: -8px; left: -8px; right: -8px; bottom: -8px; border-radius: 50%; border: 8px solid transparent; border-top-color: var(--cyan); animation: gaugeSpin 2s linear infinite; }
+        @keyframes gaugeSpin { 100% { transform: rotate(360deg); } }
+        .gauge-value { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Orbitron', sans-serif; font-size: 1.5rem; color: var(--cyan); }
+        .gauge-label { font-size: 0.75rem; color: rgba(255,255,255,0.5); letter-spacing: 0.1em; }
+        
+        .minimap { position: fixed; bottom: 20px; right: 20px; width: 150px; height: 150px; background: rgba(3,4,8,0.9); border: 1px solid rgba(0,245,255,0.3); border-radius: 12px; z-index: 1000; overflow: hidden; }
+        .minimap-grid { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(rgba(0,245,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,245,255,0.1) 1px, transparent 1px); background-size: 15px 15px; }
+        .minimap-player { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px; background: var(--cyan); border-radius: 50%; box-shadow: 0 0 15px var(--cyan); }
+        
+        .scanlines { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px); pointer-events: none; z-index: 5000; opacity: 0.3; }
+        
+        footer { position: fixed; bottom: 0; left: 80px; right: 0; height: 40px; background: rgba(3,4,8,0.9); border-top: 1px solid rgba(0,245,255,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; color: rgba(255,255,255,0.5); z-index: 999; }
+        @media (max-width: 800px) { footer { left: 60px; } .minimap { width: 100px; height: 100px; } }
+        
+        .page-header { font-family: 'Michroma', sans-serif; font-size: 1.8rem; margin-bottom: 25px; display: flex; align-items: center; gap: 15px; }
+        .page-header::before { content: ''; width: 5px; height: 35px; background: linear-gradient(180deg, var(--cyan), var(--magenta)); border-radius: 3px; }
+        
+        .live-feed { max-height: 300px; overflow-y: auto; }
+        .feed-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .feed-icon { width: 30px; height: 30px; background: rgba(0,245,255,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .feed-text { flex: 1; font-size: 0.85rem; }
+        .feed-time { font-size: 0.7rem; color: rgba(255,255,255,0.4); font-family: 'Share Tech Mono', monospace; }
+    </style>
+</head>
+<body>
+    <canvas id="webglCanvas"></canvas>
+    <canvas id="particleCanvas"></canvas>
+    <canvas id="matrixCanvas"></canvas>
+    <div class="scanlines"></div>
+    
+    <div id="ui">
+        <header>
+            <div class="logo">CYBERPUNK 2087</div>
+            <div class="header-stats">
+                <div class="stat"><div class="stat-value" id="cpuStat">0%</div><div class="stat-label">CPU</div></div>
+                <div class="stat"><div class="stat-value" id="memStat">0%</div><div class="stat-label">MEM</div></div>
+                <div class="stat"><div class="stat-value" id="netStat">0</div><div class="stat-label">NET</div></div>
+                <div class="stat"><div class="stat-value" id="fpsStat">0</div><div class="stat-label">FPS</div></div>
+            </div>
+        </header>
+        
+        <nav class="nav-panel">
+            <div class="nav-icon active" data-page="dashboard" data-label="Dashboard">📊</div>
+            <div class="nav-icon" data-page="systems" data-label="Systems">⚙️</div>
+            <div class="nav-icon" data-page="network" data-label="Network">🌐</div>
+            <div class="nav-icon" data-page="security" data-label="Security">🛡️</div>
+            <div class="nav-icon" data-page="terminal" data-label="Terminal">💻</div>
+            <div class="nav-icon" data-page="settings" data-label="Settings">⚡</div>
+        </nav>
+        
+        <main id="main">
+            <div class="page active" id="page-dashboard">
+                <h1 class="page-header">NEURAL DASHBOARD</h1>
+                <div class="grid-4">
+                    <div class="card metric-card"><div class="metric-value" id="neuralOps">0</div><div class="metric-label">NEURAL OPS/SEC</div><div class="metric-change positive">↑ 124%</div></div>
+                    <div class="card metric-card"><div class="metric-value" id="dataTransfer">0</div><div class="metric-label">DATA (GB)</div><div class="metric-change positive">↑ 89%</div></div>
+                    <div class="card metric-card"><div class="metric-value" id="activeNodes">0</div><div class="metric-label">NODES</div><div class="metric-change positive">↑ 12%</div></div>
+                    <div class="card metric-card"><div class="metric-value" style="color: var(--green);" id="threatLevel">LOW</div><div class="metric-label">THREAT</div><div class="metric-change positive">SECURE</div></div>
+                </div>
+                <div class="grid-2">
+                    <div class="card"><div class="card-title">NEURAL ACTIVITY</div><div class="chart-area"><canvas id="neuralChart"></canvas></div></div>
+                    <div class="card"><div class="card-title">DATA FLOW</div><div class="chart-area"><canvas id="dataChart"></canvas></div></div>
+                </div>
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-title">SYSTEM RESOURCES</div>
+                        <div class="progress-item"><div class="progress-header"><span>Neural Processing</span><span id="neuRes">0%</span></div><div class="progress-bar"><div class="progress-fill" id="neuBar" style="width: 0%"></div></div></div>
+                        <div class="progress-item"><div class="progress-header"><span>Memory</span><span id="memRes">0%</span></div><div class="progress-bar"><div class="progress-fill" id="memBar" style="width: 0%"></div></div></div>
+                        <div class="progress-item"><div class="progress-header"><span>Network</span><span id="netRes">0%</span></div><div class="progress-bar"><div class="progress-fill" id="netBar" style="width: 0%"></div></div></div>
+                        <div class="progress-item"><div class="progress-header"><span>GPU</span><span id="gpuRes">0%</span></div><div class="progress-bar"><div class="progress-fill" id="gpuBar" style="width: 0%"></div></div></div>
+                    </div>
+                    <div class="card"><div class="card-title">LIVE FEED</div><div class="live-feed" id="liveFeed"></div></div>
+                </div>
+            </div>
+            
+            <div class="page" id="page-systems">
+                <h1 class="page-header">SYSTEMS CONTROL</h1>
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-title">MAIN CONTROLS</div>
+                        <div class="btn-grid">
+                            <div class="cyber-btn active" data-btn="neural"><span class="icon">🧠</span><span class="label">Neural</span></div>
+                            <div class="cyber-btn active" data-btn="firewall"><span class="icon">🛡️</span><span class="label">Firewall</span></div>
+                            <div class="cyber-btn active" data-btn="encrypt"><span class="icon">🔐</span><span class="label">Encrypt</span></div>
+                            <div class="cyber-btn" data-btn="ai"><span class="icon">🤖</span><span class="label">AI Core</span></div>
+                            <div class="cyber-btn active" data-btn="backup"><span class="icon">💾</span><span class="label">Backup</span></div>
+                            <div class="cyber-btn active" data-btn="sync"><span class="icon">🔄</span><span class="label">Sync</span></div>
+                            <div class="cyber-btn" data-btn="vpn"><span class="icon">🌐</span><span class="label">VPN</span></div>
+                            <div class="cyber-btn active" data-btn="monitor"><span class="icon">📡</span><span class="label">Monitor</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">GAUGES</div>
+                        <div class="gauge-container">
+                            <div class="gauge"><div class="gauge-ring"><div class="gauge-value" id="gaugeCpu">0%</div></div><div class="gauge-label">CPU</div></div>
+                            <div class="gauge"><div class="gauge-ring"><div class="gauge-value" id="gaugeMem">0%</div></div><div class="gauge-label">MEM</div></div>
+                            <div class="gauge"><div class="gauge-ring"><div class="gauge-value" id="gaugeTemp">0°</div></div><div class="gauge-label">TEMP</div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">SLIDERS</div>
+                    <div class="slider-group"><div class="slider-header"><span>Power</span><span id="powerVal">75%</span></div><input type="range" class="cyber-slider" id="powerSlider" min="0" max="100" value="75"></div>
+                    <div class="slider-group"><div class="slider-header"><span>Sensitivity</span><span id="sensVal">50%</span></div><input type="range" class="cyber-slider" id="sensSlider" min="0" max="100" value="50"></div>
+                    <div class="slider-group"><div class="slider-header"><span>Visual</span><span id="visVal">80%</span></div><input type="range" class="cyber-slider" id="visSlider" min="0" max="100" value="80"></div>
+                </div>
+                <div class="card"><div class="card-title">HOLOGRAM</div><div id="scene3d"><div class="scene-container"><div class="hologram"></div></div></div></div>
+            </div>
+            
+            <div class="page" id="page-network">
+                <h1 class="page-header">NEURAL NETWORK</h1>
+                <div class="grid-2">
+                    <div class="card"><div class="card-title">MAP</div><div class="cyber-map" id="networkMap"></div></div>
+                    <div class="card">
+                        <div class="card-title">RADAR</div>
+                        <div class="radar-sweep">
+                            <div class="radar-rings radar-ring-1"></div><div class="radar-rings radar-ring-2"></div><div class="radar-rings radar-ring-3"></div>
+                            <div class="radar-dot" style="top: 30%; left: 50%;"></div><div class="radar-dot" style="top: 60%; left: 30%;"></div><div class="radar-dot" style="top: 45%; left: 70%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card"><div class="card-title">NODES</div><table class="data-table"><thead><tr><th>STATUS</th><th>ID</th><th>LOC</th><th>PING</th><th>LOAD</th></tr></thead><tbody id="nodesTable"></tbody></table></div>
+            </div>
+            
+            <div class="page" id="page-security">
+                <h1 class="page-header">SECURITY</h1>
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-title">THREATS</div>
+                        <div class="gauge-container">
+                            <div class="gauge"><div class="gauge-ring" style="border-color: var(--green);"><div class="gauge-value" style="color: var(--green);">98%</div></div><div class="gauge-label">SECURE</div></div>
+                            <div class="gauge"><div class="gauge-ring"><div class="gauge-value">24</div></div><div class="gauge-label">BLOCKED</div></div>
+                        </div>
+                    </div>
+                    <div class="card"><div class="card-title">PROTOCOLS</div>
+                        <div class="progress-item"><div class="progress-header"><span>Firewall</span><span style="color: var(--green);">ACTIVE</span></div><div class="progress-bar"><div class="progress-fill" style="width: 100%; background: var(--green);"></div></div></div>
+                        <div class="progress-item"><div class="progress-header"><span>Intrusion</span><span style="color: var(--green);">ACTIVE</span></div><div class="progress-bar"><div class="progress-fill" style="width: 100%; background: var(--green);"></div></div></div>
+                        <div class="progress-item"><div class="progress-header"><span>Encryption</span><span style="color: var(--green);">ACTIVE</span></div><div class="progress-bar"><div class="progress-fill" style="width: 100%; background: var(--green);"></div></div></div>
+                    </div>
+                </div>
+                <div class="card"><div class="card-title">LOG</div><div class="terminal-window" id="securityLog"></div></div>
+            </div>
+            
+            <div class="page" id="page-terminal">
+                <h1 class="page-header">TERMINAL</h1>
+                <div class="card"><div class="terminal-window" id="mainTerminal"></div></div>
+            </div>
+            
+            <div class="page" id="page-settings">
+                <h1 class="page-header">SETTINGS</h1>
+                <div class="card">
+                    <div class="card-title">MINIMAX M2.5</div>
+                    <table class="data-table">
+                        <tr><td>Model</td><td style="color: var(--cyan);">MiniMax M2.5</td></tr>
+                        <tr><td>Context</td><td>200,000 tokens</td></tr>
+                        <tr><td>Max Output</td><td>16,384 tokens</td></tr>
+                        <tr><td>Temperature</td><td>0.7</td></tr>
+                        <tr><td>Version</td><td style="color: var(--green);">v2.5.0</td></tr>
+                    </table>
+                </div>
+            </div>
+        </main>
+        
+        <footer><div>CYBERPUNK 2087 v2.0 | <span style="color: var(--cyan);">CONNECTED</span></div><div id="clock">00:00:00</div></footer>
+        <div class="minimap"><div class="minimap-grid"></div><div class="minimap-player"></div></div>
+    </div>
+
+    <script>
+        const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
+        const rand = (min, max) => Math.random() * (max - min) + min;
+        const randInt = (min, max) => Math.floor(rand(min, max));
+        
+        // Navigation
+        $$('.nav-icon').forEach(icon => {
+            icon.addEventListener('click', () => {
+                $$('.nav-icon').forEach(i => i.classList.remove('active'));
+                icon.classList.add('active');
+                $$('.page').forEach(p => p.classList.remove('active'));
+                $(`#page-${icon.dataset.page}`).classList.add('active');
+                if (navigator.vibrate) navigator.vibrate(10);
+            });
+        });
+        
+        // WebGL
+        const webglCanvas = $('#webglCanvas'), gl = webglCanvas.getContext('webgl');
+        function resizeWebGL() { webglCanvas.width = window.innerWidth; webglCanvas.height = window.innerHeight; if (gl) gl.viewport(0, 0, webglCanvas.width, webglCanvas.height); }
+        resizeWebGL(); window.addEventListener('resize', resizeWebGL);
+        
+        const vsSource = `attribute vec2 position; void main() { gl_Position = vec4(position, 0.0, 1.0); }`;
+        const fsSource = `precision mediump float; uniform float time; uniform vec2 resolution; void main() { vec2 uv = gl_FragCoord.xy / resolution; float r = 0.5 + 0.5 * sin(time * 0.001 + uv.x * 10.0); float g = 0.5 + 0.5 * sin(time * 0.001 + uv.y * 10.0 + 2.0); float b = 0.5 + 0.5 * sin(time * 0.001 + (uv.x + uv.y) * 10.0 + 4.0); gl_FragColor = vec4(r * 0.08, g * 0.08, b * 0.12, 1.0); }`;
+        
+        let program, timeUniform;
+        function initWebGL() {
+            if (!gl) return;
+            const vs = gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vs, vsSource); gl.compileShader(vs);
+            const fs = gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs, fsSource); gl.compileShader(fs);
+            program = gl.createProgram(); gl.attachShader(program, vs); gl.attachShader(program, fs); gl.linkProgram(program); gl.useProgram(program);
+            const buffer = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buffer); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+            const pos = gl.getAttribLocation(program, 'position'); gl.enableVertexAttribArray(pos); gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+            timeUniform = gl.getUniformLocation(program, 'time');
+        }
+        function renderWebGL(time) { if (!gl || !program) return; gl.uniform1f(timeUniform, time * 0.001); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); requestAnimationFrame(renderWebGL); }
+        initWebGL(); requestAnimationFrame(renderWebGL);
+        
+        // Particles
+        const particleCanvas = $('#particleCanvas'), pCtx = particleCanvas.getContext('2d');
+        function resizeParticles() { particleCanvas.width = window.innerWidth; particleCanvas.height = window.innerHeight; }
+        resizeParticles(); window.addEventListener('resize', resizeParticles);
+        
+        let particles = [];
+        class Particle { constructor() { this.reset(); } reset() { this.x = rand(0, particleCanvas.width); this.y = particleCanvas.height + 10; this.size = rand(1, 4); this.speedY = rand(1, 4); this.speedX = rand(-1, 1); this.hue = randInt(0, 60) + 180; this.life = 1; } update() { this.y -= this.speedY; this.x += this.speedX; this.life -= 0.005; if (this.life <= 0 || this.y < 0) this.reset(); } draw() { pCtx.beginPath(); pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2); pCtx.fillStyle = `hsla(${this.hue}, 100%, 60%, ${this.life})`; pCtx.fill(); } }
+        for (let i = 0; i < 150; i++) particles.push(new Particle());
+        function animateParticles() { pCtx.fillStyle = 'rgba(3, 4, 8, 0.1)'; pCtx.fillRect(0, 0, particleCanvas.width, particleCanvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animateParticles); }
+        animateParticles();
+        
+        // Matrix
+        const matrixCanvas = $('#matrixCanvas'), mCtx = matrixCanvas.getContext('2d');
+        function resizeMatrix() { matrixCanvas.width = window.innerWidth; matrixCanvas.height = window.innerHeight; }
+        resizeMatrix(); window.addEventListener('resize', resizeMatrix);
+        const matrixChars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF@#$%&*';
+        let mDrops = Array(Math.floor(matrixCanvas.width / 14)).fill(1);
+        function drawMatrix() { mCtx.fillStyle = 'rgba(3, 4, 8, 0.05)'; mCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height); mCtx.fillStyle = '#00f5ff'; mCtx.font = '14px monospace'; for (let i = 0; i < mDrops.length; i++) { mCtx.fillText(matrixChars[randInt(0, matrixChars.length)], i * 14, mDrops[i] * 14); if (mDrops[i] * 14 > matrixCanvas.height && rand() > 0.975) mDrops[i] = 0; mDrops[i]++; } }
+        setInterval(drawMatrix, 50);
+        
+        // Charts
+        const neuralData = Array(30).fill(0).map(() => randInt(40, 100));
+        function drawChart(canvasId, data, color) {
+            const canvas = $(`#${canvasId}`); if (!canvas) return;
+            const ctx = canvas.getContext('2d'); canvas.width = canvas.parentElement.clientWidth; canvas.height = canvas.parentElement.clientHeight;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)'; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(0, canvas.height * i / 4); ctx.lineTo(canvas.width, canvas.height * i / 4); ctx.stroke(); }
+            ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+            const step = canvas.width / (data.length - 1); data.forEach((v, i) => { const x = i * step, y = canvas.height - (v / 100 * canvas.height * 0.8) - canvas.height * 0.1; if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }); ctx.stroke();
+            const grad = ctx.createLinearGradient(0, 0, 0, canvas.height); grad.addColorStop(0, color.replace(')', ', 0.3)').replace('rgb', 'rgba')); grad.addColorStop(1, 'transparent');
+            ctx.lineTo(canvas.width, canvas.height); ctx.lineTo(0, canvas.height); ctx.fillStyle = grad; ctx.fill();
+        }
+        function updateCharts() { neuralData.shift(); neuralData.push(randInt(40, 100)); drawChart('neuralChart', neuralData, 'rgb(0, 245, 255)'); drawChart('dataChart', neuralData.map(v => randInt(30, 90)), 'rgb(255, 0, 255)'); $('#neuralOps').textContent = randInt(1000, 5000).toLocaleString(); $('#dataTransfer').textContent = rand(1, 10).toFixed(1); $('#activeNodes').textContent = randInt(150, 300); }
+        setInterval(updateCharts, 500);
+        
+        // Stats
+        function updateStats() {
+            const cpu = randInt(20, 80), mem = randInt(30, 70), net = randInt(10, 90), fps = randInt(30, 60);
+            $('#cpuStat').textContent = cpu + '%'; $('#memStat').textContent = mem + '%'; $('#netStat').textContent = net + ' Mbps'; $('#fpsStat').textContent = fps;
+            $('#neuRes').textContent = randInt(20, 90) + '%'; $('#neuBar').style.width = rand(20, 90) + '%';
+            $('#memRes').textContent = rand(30, 80).toFixed(0) + '%'; $('#memBar').style.width = rand(30, 80) + '%';
+            $('#netRes').textContent = rand(10, 60).toFixed(0) + '%'; $('#netBar').style.width = rand(10, 60) + '%';
+            $('#gpuRes').textContent = rand(40, 95).toFixed(0) + '%'; $('#gpuBar').style.width = rand(40, 95) + '%';
+            $('#gaugeCpu').textContent = cpu + '%'; $('#gaugeMem').textContent = mem + '%'; $('#gaugeTemp').textContent = randInt(35, 75) + '°';
+            $('#clock').textContent = new Date().toTimeString().split(' ')[0];
+        }
+        setInterval(updateStats, 500);
+        
+        // Feed
+        const feedMessages = [{ icon: '🔄', text: 'Neural sync completed' }, { icon: '🛡️', text: 'Threat scan: No issues' }, { icon: '💾', text: 'Backup: 2.4GB' }, { icon: '📡', text: 'Node connected' }, { icon: '🔐', text: 'AES-256 active' }, { icon: '⚡', text: 'Power optimized' }, { icon: '🌐', text: 'Latency: 2ms' }, { icon: '🧠', text: 'Model updated' }];
+        function addFeedItem() { const feed = $('#liveFeed'), msg = feedMessages[randInt(0, feedMessages.length)]; const item = document.createElement('div'); item.className = 'feed-item'; item.innerHTML = `<div class="feed-icon">${msg.icon}</div><div class="feed-text">${msg.text}</div><div class="feed-time">${randInt(1, 59)}s</div>`; feed.insertBefore(item, feed.firstChild); if (feed.children.length > 8) feed.lastChild.remove(); }
+        setInterval(addFeedItem, 2000);
+        
+        // Map
+        const mapPoints = [{ name: 'HQ', top: 50, left: 50 }, { name: 'N1', top: 20, left: 30 }, { name: 'N2', top: 25, left: 70 }, { name: 'N3', top: 70, left: 25 }, { name: 'N4', top: 75, left: 65 }, { name: 'N5', top: 40, left: 80 }, { name: 'N6', top: 60, left: 15 }];
+        mapPoints.forEach(p => { const point = document.createElement('div'); point.className = 'map-point'; point.style.top = p.top + '%'; point.style.left = p.left + '%'; $('#networkMap').appendChild(point); });
+        
+        // Nodes
+        const nodes = [{ id: 'NX-01', loc: 'Tokyo', ping: 12, load: 45 }, { id: 'NX-02', loc: 'NYC', ping: 24, load: 67 }, { id: 'NX-03', loc: 'London', ping: 18, load: 32 }, { id: 'NX-04', loc: 'Berlin', ping: 15, load: 78 }, { id: 'NX-05', loc: 'Sydney', ping: 45, load: 23 }];
+        function updateNodesTable() { $('#nodesTable').innerHTML = nodes.map(n => `<tr><td><span class="status-dot online"></span>ONLINE</td><td style="color: var(--cyan); font-family: 'Share Tech Mono';">${n.id}</td><td>${n.loc}</td><td>${randInt(10, 50)}ms</td><td>${randInt(20, 90)}%</td></tr>`).join(''); }
+        updateNodesTable(); setInterval(updateNodesTable, 3000);
+        
+        // Terminal
+        const terminalCmds = [{ cmd: 'system status', out: '✓ All systems operational', type: 'success' }, { cmd: 'check network', out: '✓ 5 nodes connected', type: 'success' }, { cmd: 'scan -all', out: '✓ 0 threats', type: 'success' }, { cmd: 'memory', out: 'Allocated: 12.4GB / 16GB', type: 'out' }, { cmd: 'model', out: 'MiniMax M2.5 - 200K', type: 'out' }];
+        function addTerminalLine(termId, cmd, out) { const term = $(`#${termId}`); if (!term) return; term.innerHTML += `<div class="terminal-line"><span class="terminal-prompt">❯</span> <span class="terminal-cmd">${cmd}</span></div><div class="terminal-line"><span class="terminal-out">${out}</span></div>`; term.scrollTop = term.scrollHeight; }
+        function simulateTerminal() { const cmd = terminalCmds[randInt(0, terminalCmds.length)]; addTerminalLine('mainTerminal', cmd.cmd, cmd.out); addTerminalLine('securityLog', `ALERT: ${cmd.cmd}`, cmd.out); }
+        addTerminalLine('mainTerminal', 'CYBERPUNK 2087 Terminal', '✓ Connected'); setInterval(simulateTerminal, 1500);
+        
+        // Controls
+        $$('.cyber-btn[data-btn]').forEach(btn => { btn.addEventListener('click', () => { btn.classList.toggle('active'); if (navigator.vibrate) navigator.vibrate(15); }); });
+        [{ id: 'powerSlider', val: 'powerVal' }, { id: 'sensSlider', val: 'sensVal' }, { id: 'visSlider', val: 'visVal' }].forEach(s => { $(`#${s.id}`).addEventListener('input', (e) => { $(`#${s.val}`).textContent = e.target.value + '%'; }); });
+    </script>
+</body>
+</html>
