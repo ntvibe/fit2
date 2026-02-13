@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEXUS | Neural Interface</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cyan: #00f0ff;
+            --magenta: #ff00aa;
+            --yellow: #ffee00;
+            --green: #00ff88;
+            --red: #ff3366;
+            --dark: #050508;
+            --dark-mid: #0a0a12;
+            --glass: rgba(255,255,255,0.03);
+            --glass-border: rgba(255,255,255,0.08);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--dark);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--dark); }
+        ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 2px; }
+        
+        /* Background Effects */
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            transform: perspective(800px) rotateX(60deg);
+            transform-origin: 50% 0%;
+            animation: gridPulse 8s ease-in-out infinite;
+            z-index: 0;
+        }
+        
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+        
+        .bg-particles {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 1;
+            overflow: hidden;
+        }
+        
+        .bg-particle {
+            position: absolute;
+            width: 2px; height: 2px;
+            background: var(--cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 6px var(--cyan);
+            animation: particleDrift linear infinite;
+        }
+        
+        @keyframes particleDrift {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) scale(1); opacity: 0; }
+        }
+        
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 60px;
+            background: linear-gradient(180deg, rgba(5,5,8,0.95) 0%, rgba(5,5,8,0.8) 100%);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+        
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--cyan), var(--magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.2em;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .nav-btn {
+            padding: 8px 16px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            color: rgba(255,255,255,0.7);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .nav-btn:hover, .nav-btn.active {
+            background: rgba(0,240,255,0.15);
+            border-color: var(--cyan);
+            color: var(--cyan);
+            box-shadow: 0 0 20px rgba(0,240,255,0.3);
+        }
+        
+        /* Main Content */
+        main {
+            position: relative;
+            z-index: 10;
+            padding-top: 80px;
+            min-height: 100vh;
+        }
+        
+        .page {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .page.active { display: block; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Dashboard Grid */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(0,240,255,0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+        
+        .card-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--cyan), var(--magenta));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .card-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--cyan), var(--green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .card-sub {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 5px;
+        }
+        
+        .card-sub span { color: var(--green); }
+        
+        /* Charts */
+        .chart-container {
+            height: 150px;
+            position: relative;
+            margin-top: 15px;
+        }
+        
+        .chart {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Progress Bars */
+        .progress-item {
+            margin-bottom: 15px;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-bottom: 6px;
+            color: rgba(255,255,255,0.7);
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s ease;
+            background: linear-gradient(90deg, var(--cyan), var(--green));
+        }
+        
+        /* Live Feed */
+        .feed {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .feed-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--glass-border);
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .feed-dot {
+            width: 8px; height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            margin-top: 6px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,255,136,0.5); }
+            50% { opacity: 0.8; box-shadow: 0 0 0 8px rgba(0,255,136,0); }
+        }
+        
+        .feed-content { flex: 1; }
+        
+        .feed-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 3px;
+        }
+        
+        .feed-time {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            font-family: 'Share Tech Mono', monospace;
+        }
+        
+        .feed-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            color: var(--cyan);
+        }
+        
+        /* Controls Page */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .control-btn {
+            aspect-ratio: 1;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn:hover {
+            background: rgba(0,240,255,0.1);
+            border-color: var(--cyan);
+            transform: scale(1.05);
+        }
+        
+        .control-btn.active {
+            background: rgba(0,240,255,0.2);
+            border-color: var(--cyan);
+            box-shadow: 0 0 30px rgba(0,240,255,0.3);
+        }
+        
+        .control-icon {
+            font-size: 2rem;
+        }
+        
+        .control-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.7);
+        }
+        
+        /* Toggle Switch */
+        .toggle {
+            width: 50px; height: 26px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle.active { background: var(--cyan); }
+        
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 22px; height: 22px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px; left: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle.active::after { left: 26px; }
+        
+        /* Sliders */
+        .slider-container {
+            margin-bottom: 20px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px; height: 20px;
+            background: var(--cyan);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--cyan);
+        }
+        
+        /* Analytics Page */
+        .analytics-chart {
+            height: 200px;
+            background: var(--glass);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 100%;
+            padding: 20px;
+            gap: 8px;
+        }
+        
+        .bar {
+            flex: 1;
+            background: linear-gradient(180deg, var(--cyan), transparent);
+            border-radius: 4px 4px 0 0;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+        
+        .bar::before {
+            content: attr(data-label);
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.5);
+            white-space: nowrap;
+        }
+        
+        .bar:hover { background: linear-gradient(180deg, var(--magenta), transparent); }
+        
+        /* Terminal */
+        .terminal {
+            background: #0a0a0f;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 15px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            height: 300px;
+            overflow-y: auto;
+        }
+        
+        .terminal-line {
+            margin-bottom: 5px;
+            animation: typeIn 0.1s ease;
+        }
+        
+        @keyframes typeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .terminal-prompt { color: var(--cyan);-output { color: }
+        .terminal rgba(255,255,255,0.7); }
+        .terminal-error { color: var(--red); }
+        .terminal-success { color: var(--green); }
+        
+        /* MiniMax Badge */
+        .mm-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, rgba(0,240,255,0.1), rgba(255,0,170,0.1));
+            border: 1px solid var(--cyan);
+            border-radius: 30px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            color: var(--cyan);
+            z-index: 1000;
+            animation: glowBadge 3s ease-in-out infinite;
+        }
+        
+        @keyframes glowBadge {
+            0%, 100% { box-shadow: 0 0 10px rgba(0,240,255,0.3); }
+            50% { box-shadow: 0 0 25px rgba(0,240,255,0.6); }
+        }
+        
+        /* Ripple Effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(0,240,255,0.4);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+        
+        @keyframes ripple {
+            to { transform: scale(4); opacity: 0; }
+        }
+        
+        /* Page Title */
+        .page-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .page-title::before {
+            content: '';
+            width: 4px; height: 30px;
+            background: linear-gradient(180deg, var(--cyan), var(--magenta));
+            border-radius: 2px;
+        }
+        
+        /* Stats Row */
+        .stats-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-pill {
+            padding: 8px 16px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        
+        .stat-pill strong {
+            color: var(--cyan);
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        /* Radar Chart */
+        .radar-container {
+            width: 100%;
+            height: 250px;
+            position: relative;
+        }
+        
+        canvas.radar {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* 3D Cube */
+        .cube-container {
+            perspective: 600px;
+            width: 150px;
+            height: 150px;
+            margin: 50px auto;
+        }
+        
+        .cube {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: rotateCube 10s linear infinite;
+        }
+        
+        @keyframes rotateCube {
+            from { transform: rotateX(-20deg) rotateY(0deg); }
+            to { transform: rotateX(-20deg) rotateY(360deg); }
+        }
+        
+        .face {
+            position: absolute;
+            width: 150px; height: 150px;
+            border: 2px solid var(--cyan);
+            background: rgba(0,240,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: var(--cyan);
+        }
+        
+        .front { transform: translateZ(75px); }
+        .back { transform: translateZ(-75px) rotateY(180deg); }
+        .right { transform: translateX(75px) rotateY(90deg); }
+        .left { transform: translateX(-75px) rotateY(-90deg); }
+        .top { transform: translateY(-75px) rotateX(90deg); }
+        .bottom { transform: translateY(75px) rotateX(-90deg); }
+        
+        /* Matrix Rain */
+        #matrix {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+        
+        /* Network Graph */
+        .network-container {
+            height: 300px;
+            position: relative;
+            background: var(--glass);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .node {
+            position: absolute;
+            width: 12px; height: 12px;
+            background: var(--cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--cyan);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .node:hover {
+            transform: scale(1.5);
+            background: var(--magenta);
+            box-shadow: 0 0 25px var(--magenta);
+        }
+        
+        .node::before {
+            content: attr(data-label);
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.6);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .node:hover::before { opacity: 1; }
+        
+        /* Interactive Graph Lines */
+        .graph-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+            transform-origin: left center;
+            opacity: 0.3;
+        }
+        
+        /* Touch Feedback */
+        @media (hover: none) {
+            .control-btn:active {
+                transform: scale(0.95);
+                background: rgba(0,240,255,0.3);
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix"></canvas>
+    <div class="bg-grid"></div>
+    <div class="bg-particles" id="bgParticles"></div>
+    
+    <nav>
+        <div class="logo">NEXUS</div>
+        <div class="nav-links">
+            <button class="nav-btn active" data-page="dashboard">Dashboard</button>
+            <button class="nav-btn" data-page="analytics">Analytics</button>
+            <button class="nav-btn" data-page="controls">Controls</button>
+            <button class="nav-btn" data-page="terminal">Terminal</button>
+        </div>
+    </nav>
+    
+    <main>
+        <!-- Dashboard Page -->
+        <div class="page active" id="dashboard">
+            <h1 class="page-title">System Overview</h1>
+            
+            <div class="stats-row">
+                <div class="stat-pill">Status: <strong>ONLINE</strong></div>
+                <div class="stat-pill">Uptime: <strong id="uptime">00:00:00</strong></div>
+                <div class="stat-pill">CPU: <strong id="cpu">0%</strong></div>
+                <div class="stat-pill">Memory: <strong id="memory">0%</strong></div>
+            </div>
+            
+            <div class="dashboard">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Neural Processing</span>
+                        <div class="card-icon">🧠</div>
+                    </div>
+                    <div class="card-value" id="neuralVal">0</div>
+                    <div class="card-sub">Operations/sec <span>↑ 12.4%</span></div>
+                    <div class="chart-container">
+                        <canvas id="neuralChart" class="chart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Data Flow</span>
+                        <div class="card-icon">📊</div>
+                    </div>
+                    <div class="card-value" id="dataVal">0</div>
+                    <div class="card-sub">GB Transferred <span>↑ 8.2%</span></div>
+                    <div class="chart-container">
+                        <canvas id="dataChart" class="chart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Active Nodes</span>
+                        <div class="card-icon">🔗</div>
+                    </div>
+                    <div class="card-value" id="nodesVal">0</div>
+                    <div class="card-sub">Connected <span class="span-green">●</span></div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Threat Level</span>
+                        <div class="card-icon">🛡️</div>
+                    </div>
+                    <div class="card-value" style="color: var(--green);" id="threatVal">LOW</div>
+                    <div class="card-sub">All systems secure</div>
+                </div>
+            </div>
+            
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header">
+                    <span class="card-title">Live Activity Feed</span>
+                </div>
+                <div class="feed" id="feed"></div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">System Resources</span>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-label">
+                        <span>CPU Cluster A</span>
+                        <span id="cpu1">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="cpuBar1" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-label">
+                        <span>CPU Cluster B</span>
+                        <span id="cpu2">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="cpuBar2" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-label">
+                        <span>Memory Allocation</span>
+                        <span id="mem">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="memBar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-label">
+                        <span>Network Bandwidth</span>
+                        <span id="net">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="netBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Analytics Page -->
+        <div class="page" id="analytics">
+            <h1 class="page-title">Analytics</h1>
+            
+            <div class="dashboard">
+                <div class="card" style="grid-column: span 2;">
+                    <div class="card-header">
+                        <span class="card-title">Weekly Performance</span>
+                    </div>
+                    <div class="analytics-chart">
+                        <div class="bar-chart" id="weeklyChart"></div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Neural Network</span>
+                    </div>
+                    <div class="network-container" id="networkGraph"></div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Model Capabilities</span>
+                    </div>
+                    <div class="radar-container">
+                        <canvas class="radar" id="radarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">3D Model Visualization</span>
+                </div>
+                <div class="cube-container">
+                    <div class="cube">
+                        <div class="face front">N</div>
+                        <div class="face back">E</div>
+                        <div class="face right">X</div>
+                        <div class="face left">U</div>
+                        <div class="face top">S</div>
+                        <div class="face bottom"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Controls Page -->
+        <div class="page" id="controls">
+            <h1 class="page-title">Controls</h1>
+            
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header">
+                    <span class="card-title">Quick Actions</span>
+                </div>
+                <div class="controls-grid">
+                    <div class="control-btn active" data-control="neural">
+                        <span class="control-icon">🧠</span>
+                        <span class="control-label">Neural Net</span>
+                    </div>
+                    <div class="control-btn" data-control="firewall">
+                        <span class="control-icon">🛡️</span>
+                        <span class="control-label">Firewall</span>
+                    </div>
+                    <div class="control-btn" data-control="encrypt">
+                        <span class="control-icon">🔐</span>
+                        <span class="control-label">Encryption</span>
+                    </div>
+                    <div class="control-btn active" data-control="backup">
+                        <span class="control-icon">💾</span>
+                        <span class="control-label">Auto Backup</span>
+                    </div>
+                    <div class="control-btn" data-control="ai">
+                        <span class="control-icon">🤖</span>
+                        <span class="control-label">AI Mode</span>
+                    </div>
+                    <div class="control-btn active" data-control="sync">
+                        <span class="control-icon">🔄</span>
+                        <span class="control-label">Sync</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header">
+                    <span class="card-title">System Toggles</span>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-label">
+                        <span>Particle Effects</span>
+                        <div class="toggle active" id="toggleParticles"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-label">
+                        <span>Sound Effects</span>
+                        <div class="toggle" id="toggleSound"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-label">
+                        <span>Haptic Feedback</span>
+                        <div class="toggle active" id="toggleHaptic"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-label">
+                        <span>Live Data</span>
+                        <div class="toggle active" id="toggleLive"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Sliders</span>
+                </div>
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Processing Power</span>
+                        <span id="powerVal">75%</span>
+                    </div>
+                    <input type="range" class="slider" id="powerSlider" min="0" max="100" value="75">
+                </div>
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Sensitivity</span>
+                        <span id="sensVal">50%</span>
+                    </div>
+                    <input type="range" class="slider" id="sensSlider" min="0" max="100" value="50">
+                </div>
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Visual Intensity</span>
+                        <span id="visVal">80%</span>
+                    </div>
+                    <input type="range" class="slider" id="visSlider" min="0" max="100" value="80">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Terminal Page -->
+        <div class="page" id="terminal">
+            <h1 class="page-title">Terminal</h1>
+            
+            <div class="card">
+                <div class="terminal" id="terminal"></div>
+            </div>
+        </div>
+    </main>
+    
+    <div class="mm-badge">🤖 Powered by MiniMax M2.5</div>
+    
+    <script>
+        // ==================== UTILITIES ====================
+        const $ = (sel) => document.querySelector(sel);
+        const $$ = (sel) => document.querySelectorAll(sel);
+        const rand = (min, max) => Math.random() * (max - min) + min;
+        const randInt = (min, max) => Math.floor(rand(min, max));
+        
+        // ==================== NAVIGATION ====================
+        const navBtns = $$('.nav-btn');
+        const pages = $$('.page');
+        
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                navBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                pages.forEach(p => p.classList.remove('active'));
+                $(`#${btn.dataset.page}`).classList.add('active');
+            });
+        });
+        
+        // ==================== BACKGROUND PARTICLES ====================
+        const bgParticles = $('#bgParticles');
+        for (let i = 0; i < 50; i++) {
+            const p = document.createElement('div');
+            p.className = 'bg-particle';
+            p.style.left = rand(0, 100) + '%';
+            p.style.animationDuration = rand(10, 30) + 's';
+            p.style.animationDelay = rand(0, 20) + 's';
+            p.style.background = rand() > 0.5 ? 'var(--cyan)' : 'var(--magenta)';
+            bgParticles.appendChild(p);
+        }
+        
+        // ==================== MATRIX RAIN ====================
+        const matrix = $('#matrix');
+        const ctx = matrix.getContext('2d');
+        matrix.width = window.innerWidth;
+        matrix.height = window.innerHeight;
+        
+        const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
+        const fontSize = 14;
+        const columns = matrix.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(5, 5, 8, 0.05)';
+            ctx.fillRect(0, 0, matrix.width, matrix.height);
+            ctx.fillStyle = '#00f0ff';
+            ctx.font = fontSize + 'px monospace';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const char = chars[randInt(0, chars.length)];
+                ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > matrix.height && rand() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        
+        setInterval(drawMatrix, 50);
+        
+        // ==================== LIVE STATS ====================
+        let startTime = Date.now();
+        
+        function updateStats() {
+            const cpu = randInt(20, 80);
+            const mem = randInt(30, 70);
+            const net = randInt(10, 60);
+            
+            $('#cpu').textContent = cpu + '%';
+            $('#memory').textContent = mem + '%';
+            $('#cpu1').textContent = randInt(20, 90) + '%';
+            $('#cpuBar1').style.width = rand(20, 90) + '%';
+            $('#cpu2').textContent = rand(20, 90) + '%';
+            $('#cpuBar2').style.width = rand(20, 90) + '%';
+            $('#mem').textContent = mem + '%';
+            $('#memBar').style.width = mem + '%';
+            $('#net').textContent = net + '%';
+            $('#netBar').style.width = net + '%';
+            
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const hrs = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+            const mins = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+            const secs = String(elapsed % 60).padStart(2, '0');
+            $('#uptime').textContent = `${hrs}:${mins}:${secs}`;
+        }
+        
+        setInterval(updateStats, 1000);
+        
+        // ==================== CHARTS ====================
+        const neuralData = [];
+        for (let i = 0; i < 20; i++) neuralData.push(randInt(50, 100));
+        
+        function drawChart(canvasId, data, color) {
+            const canvas = $(`#${canvasId}`);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            const step = canvas.width / (data.length - 1);
+            data.forEach((v, i) => {
+                const x = i * step;
+                const y = canvas.height - (v / 100 * canvas.height);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            
+            // Gradient fill
+            const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            grad.addColorStop(0, color.replace(')', ', 0.3)').replace('rgb', 'rgba'));
+            grad.addColorStop(1, 'transparent');
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.lineTo(0, canvas.height);
+            ctx.fillStyle = grad;
+            ctx.fill();
+        }
+        
+        function updateCharts() {
+            neuralData.shift();
+            neuralData.push(randInt(50, 100));
+            drawChart('neuralChart', neuralData, 'rgb(0, 240, 255)');
+            drawChart('dataChart', neuralData.map(v => randInt(30, 90)), 'rgb(255, 0, 170)');
+            
+            $('#neuralVal').textContent = randInt(1000, 5000).toLocaleString();
+            $('#dataVal').textContent = rand(0.5, 5).toFixed(2);
+            $('#nodesVal').textContent = randInt(150, 250);
+        }
+        
+        setInterval(updateCharts, 500);
+        
+        // ==================== FEED ====================
+        const feedItems = [
+            { title: 'Neural processing cluster synchronized', time: 'now' },
+            { title: 'New model weights loaded', time: '2s ago' },
+            { title: 'Threat scan completed - 0 issues', time: '5s ago' },
+            { title: 'Backup completed successfully', time: '12s ago' },
+            { title: 'Network latency: 12ms', time: '15s ago' },
+            { title: 'Memory optimization complete', time: '20s ago' },
+        ];
+        
+        function updateFeed() {
+            const feed = $('#feed');
+            const item = feedItems[randInt(0, feedItems.length)];
+            const div = document.createElement('div');
+            div.className = 'feed-item';
+            div.innerHTML = `
+                <div class="feed-dot"></div>
+                <div class="feed-content">
+                    <div class="feed-title">${item.title}</div>
+                    <div class="feed-time">${item.time}</div>
+                </div>
+                <div class="feed-value">${rand(100, 999)}</div>
+            `;
+            feed.insertBefore(div, feed.firstChild);
+            if (feed.children.length > 10) feed.lastChild.remove();
+        }
+        
+        setInterval(updateFeed, 2000);
+        
+        // ==================== WEEKLY CHART ====================
+        const weeklyData = [65, 78, 82, 70, 89, 95, 88];
+        const weeklyLabels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+        const weeklyChart = $('#weeklyChart');
+        weeklyData.forEach((v, i) => {
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            bar.style.height = v + '%';
+            bar.setAttribute('data-label', weeklyLabels[i]);
+            bar.style.background = `linear-gradient(180deg, var(--${['cyan', 'magenta', 'yellow', 'green', 'cyan', 'magenta', 'yellow'][i]}), transparent)`;
+            weeklyChart.appendChild(bar);
+        });
+        
+        // ==================== NETWORK GRAPH ====================
+        const networkContainer = $('#networkGraph');
+        const nodes = [];
+        const nodeCount = 15;
+        
+        for (let i = 0; i < nodeCount; i++) {
+            const node = document.createElement('div');
+            node.className = 'node';
+            node.style.left = rand(10, 85) + '%';
+            node.style.top = rand(10, 85) + '%';
+            node.setAttribute('data-label', `Node ${i + 1}`);
+            node.style.animationDelay = rand(0, 5) + 's';
+            networkContainer.appendChild(node);
+            nodes.push({ el: node, x: parseFloat(node.style.left), y: parseFloat(node.style.top) });
+        }
+        
+        // Animate nodes
+        function animateNodes() {
+            nodes.forEach((n, i) => {
+                n.x += rand(-0.5, 0.5);
+                n.y += rand(-0.5, 0.5);
+                n.x = Math.max(10, Math.min(85, n.x));
+                n.y = Math.max(10, Math.min(85, n.y));
+                n.el.style.left = n.x + '%';
+                n.el.style.top = n.y + '%';
+            });
+            requestAnimationFrame(animateNodes);
+        }
+        animateNodes();
+        
+        // ==================== RADAR CHART ====================
+        const radarCtx = $('#radarChart').getContext('2d');
+        const radarData = [85, 90, 78, 95, 88, 72];
+        const radarLabels = ['Speed', 'Memory', 'Logic', 'Vision', 'Speech', 'Creativity'];
+        
+        function drawRadar() {
+            const canvas = $('#radarChart');
+            const w = canvas.width = canvas.parentElement.clientWidth;
+            const h = canvas.height = canvas.parentElement.clientHeight;
+            const cx = w / 2;
+            const cy = h / 2;
+            const r = Math.min(w, h) / 2 - 30;
+            
+            radarCtx.clearRect(0, 0, w, h);
+            
+            // Draw grid
+            for (let i = 1; i <= 4; i++) {
+                radarCtx.beginPath();
+                radarCtx.strokeStyle = 'rgba(255,255,255,0.1)';
+                for (let j = 0; j <= 6; j++) {
+                    const angle = (j / 6) * Math.PI * 2 - Math.PI / 2;
+                    const x = cx + Math.cos(angle) * (r * i / 4);
+                    const y = cy + Math.sin(angle) * (r * i / 4);
+                    if (j === 0) radarCtx.moveTo(x, y);
+                    else radarCtx.lineTo(x, y);
+                }
+                radarCtx.closePath();
+                radarCtx.stroke();
+            }
+            
+            // Draw data
+            radarCtx.beginPath();
+            radarData.forEach((v, i) => {
+                const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
+                const x = cx + Math.cos(angle) * (r * v / 100);
+                const y = cy + Math.sin(angle) * (r * v / 100);
+                if (i === 0) radarCtx.moveTo(x, y);
+                else radarCtx.lineTo(x, y);
+            });
+            radarCtx.closePath();
+            radarCtx.fillStyle = 'rgba(0, 240, 255, 0.3)';
+            radarCtx.fill();
+            radarCtx.strokeStyle = 'var(--cyan)';
+            radarCtx.lineWidth = 2;
+            radarCtx.stroke();
+            
+            // Draw points
+            radarData.forEach((v, i) => {
+                const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
+                const x = cx + Math.cos(angle) * (r * v / 100);
+                const y = cy + Math.sin(angle) * (r * v / 100);
+                radarCtx.beginPath();
+                radarCtx.arc(x, y, 5, 0, Math.PI * 2);
+                radarCtx.fillStyle = 'var(--cyan)';
+                radarCtx.fill();
+            });
+        }
+        
+        drawRadar();
+        setInterval(drawRadar, 3000);
+        
+        // ==================== CONTROLS ====================
+        $$('.control-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                createRipple(btn);
+            });
+        });
+        
+        function createRipple(el) {
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            const rect = el.getBoundingClientRect();
+            ripple.style.left = '50%';
+            ripple.style.top = '50%';
+            el.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        }
+        
+        // Toggles
+        $$('.toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                toggle.classList.toggle('active');
+            });
+        });
+        
+        // Sliders
+        $('#powerSlider').addEventListener('input', (e) => {
+            $('#powerVal').textContent = e.target.value + '%';
+        });
+        $('#sensSlider').addEventListener('input', (e) => {
+            $('#sensVal').textContent = e.target.value + '%';
+        });
+        $('#visSlider').addEventListener('input', (e) => {
+            $('#visVal').textContent = e.target.value + '%';
+        });
+        
+        // ==================== TERMINAL ====================
+        const terminal = $('#terminal');
+        const commands = [
+            { cmd: 'system status', out: 'All systems operational', type: 'success' },
+            { cmd: 'check neural-net', out: '✓ Neural network responsive (2.4ms)', type: 'success' },
+            { cmd: 'scan vulnerabilities', out: '✓ No vulnerabilities found', type: 'success' },
+            { cmd: 'memory usage', out: 'Allocated: 12.4GB / 16GB', type: 'output' },
+            { cmd: 'model info', out: 'MiniMax M2.5 - 200K context', type: 'output' },
+            { cmd: 'ping cluster-a', out: 'Reply from 10.0.0.1: time=2ms', type: 'output' },
+            { cmd: 'deploy update', out: 'Update deployed successfully', type: 'success' },
+            { cmd: 'backup database', out: 'Backup complete: 2.4GB archived', type: 'success' },
+        ];
+        
+        function addTerminalLine(text, type = 'output') {
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.innerHTML = `<span class="terminal-prompt">❯</span> <span class="terminal-${type}">${text}</span>`;
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+        
+        function simulateTerminal() {
+            const cmd = commands[randInt(0, commands.length)];
+            addTerminalLine(cmd.cmd, 'prompt');
+            setTimeout(() => addTerminalLine(cmd.out, cmd.type), rand(100, 500));
+        }
+        
+        // Initial lines
+        addTerminalLine('NEXUS Terminal v2.5.0', 'success');
+        addTerminalLine('Connecting to neural network...', 'output');
+        setTimeout(() => addTerminalLine('✓ Connected', 'success'), 500);
+        
+        setInterval(simulateTerminal, 2000);
+        
+        // ==================== RESIZE ====================
+        window.addEventListener('resize', () => {
+            matrix.width = window.innerWidth;
+            matrix.height = window.innerHeight;
+        });
+        
+        // ==================== HAPTIC ====================
+        if (navigator.vibrate) {
+            $$('.control-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    navigator.vibrate(10);
+                });
+            });
+            $$('.toggle').forEach(t => {
+                t.addEventListener('click', () => navigator.vibrate(5));
+            });
+        }
+        
+        // ==================== TOUCH ====================
+        document.addEventListener('touchstart', (e) => {
+            if (e.target.classList.contains('control-btn')) {
+                e.target.style.transform = 'scale(0.95)';
+                setTimeout(() => e.target.style.transform = '', 150);
+            }
+        }, { passive: true });
+    </script>
+</body>
+</html>
