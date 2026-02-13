@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>MiniMax M2.5 Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f5ff;
+            --secondary: #ff00aa;
+            --accent: #ffee00;
+            --dark: #0a0a0f;
+            --glass: rgba(255,255,255,0.03);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--dark);
+            color: white;
+            min-height: 100vh;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+        
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .container {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+        
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2rem, 8vw, 5rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 2s ease-in-out infinite alternate, float 6s ease-in-out infinite;
+            text-shadow: 0 0 60px rgba(0,245,255,0.5);
+            letter-spacing: 0.1em;
+        }
+        
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px var(--primary)); }
+            to { filter: drop-shadow(0 0 40px var(--secondary)); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateX(10deg); }
+            50% { transform: translateY(-20px) rotateX(0deg); }
+        }
+        
+        .subtitle {
+            font-size: clamp(0.8rem, 3vw, 1.5rem);
+            color: rgba(255,255,255,0.6);
+            margin-top: 1rem;
+            letter-spacing: 0.5em;
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: particleFloat linear infinite;
+            box-shadow: 0 0 10px var(--primary);
+        }
+        
+        @keyframes particleFloat {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        .grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: center bottom;
+            animation: gridMove 20s linear infinite;
+            z-index: 2;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+        }
+        
+        .ring {
+            position: absolute;
+            border: 2px solid transparent;
+            border-radius: 50%;
+            animation: ringExpand 4s ease-out infinite;
+        }
+        
+        .ring:nth-child(1) { 
+            width: 100px; height: 100px; border-color: var(--primary); 
+            animation-delay: 0s;
+        }
+        .ring:nth-child(2) { 
+            width: 200px; height: 200px; border-color: var(--secondary); 
+            animation-delay: 1s;
+        }
+        .ring:nth-child(3) { 
+            width: 300px; height: 300px; border-color: var(--accent); 
+            animation-delay: 2s;
+        }
+        
+        @keyframes ringExpand {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+        
+        .rings-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            pointer-events: none;
+        }
+        
+        .info {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+            z-index: 20;
+            text-align: center;
+        }
+        
+        .tap-hint {
+            position: fixed;
+            bottom: 5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1rem;
+            color: var(--primary);
+            z-index: 20;
+            animation: blink 1s ease-in-out infinite;
+            pointer-events: auto;
+            cursor: pointer;
+            padding: 1rem 2rem;
+            border: 1px solid var(--primary);
+            border-radius: 30px;
+            background: rgba(0,245,255,0.1);
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .burst {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+            z-index: 15;
+            pointer-events: none;
+            animation: burst 0.8s ease-out forwards;
+        }
+        
+        @keyframes burst {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(50); opacity: 0; }
+        }
+        
+        .model-info {
+            position: fixed;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(0.6rem, 2vw, 0.9rem);
+            color: rgba(255,255,255,0.5);
+            z-index: 20;
+            letter-spacing: 0.2em;
+        }
+        
+        .mode-indicator {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0,245,255,0.1);
+            border: 1px solid var(--primary);
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: var(--primary);
+            z-index: 20;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 0.1em;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="grid"></div>
+    
+    <div class="rings-container">
+        <div class="ring"></div>
+        <div class="ring"></div>
+        <div class="ring"></div>
+    </div>
+    
+    <div class="container">
+        <div class="logo">MINIMAX</div>
+        <div class="subtitle">M2.5 DEMO</div>
+    </div>
+    
+    <div class="model-info">LARGE LANGUAGE MODEL</div>
+    <div class="mode-indicator">⚡ ACTIVE</div>
+    
+    <div class="tap-hint" id="tapHint">TAP ANYWHERE</div>
+    <div class="info">Powered by MiniMax M2.5 • 200K Context Window</div>
+    
+    <div class="particles" id="particles"></div>
+
+    <script>
+        // Canvas particle system
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        
+        resize();
+        window.addEventListener('resize', resize);
+        
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                this.x = Math.random() * width;
+                this.y = height + 10;
+                this.size = Math.random() * 3 + 1;
+                this.speedY = Math.random() * 2 + 1;
+                this.speedX = (Math.random() - 0.5) * 2;
+                this.hue = Math.random() * 60 + 180; // cyan to purple
+                this.life = 1;
+                this.decay = Math.random() * 0.01 + 0.005;
+            }
+            
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                this.life -= this.decay;
+                this.size *= 0.99;
+                
+                if (this.life <= 0 || this.y < 0) {
+                    this.reset();
+                    this.y = height + 10;
+                }
+            }
+            
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${this.hue}, 100%, 70%, ${this.life})`;
+                ctx.fill();
+                
+                // Glow
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 3);
+                gradient.addColorStop(0, `hsla(${this.hue}, 100%, 70%, ${this.life * 0.3})`);
+                gradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = gradient;
+                ctx.fill();
+            }
+        }
+        
+        // Create particles
+        for (let i = 0; i < 100; i++) {
+            particles.push(new Particle());
+            // Randomize initial positions
+            particles[i].y = Math.random() * height;
+        }
+        
+        // Mouse/touch interaction
+        let mouse = { x: null, y: null, active: false };
+        
+        document.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            mouse.active = true;
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+            mouse.active = true;
+        });
+        
+        document.addEventListener('touchstart', (e) => {
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+            mouse.active = true;
+            createBurst(mouse.x, mouse.y);
+        });
+        
+        document.addEventListener('mousedown', (e) => {
+            createBurst(e.clientX, e.clientY);
+        });
+        
+        function createBurst(x, y) {
+            const burst = document.createElement('div');
+            burst.className = 'burst';
+            burst.style.left = x + 'px';
+            burst.style.top = y + 'px';
+            document.body.appendChild(burst);
+            
+            // Add particles
+            for (let i = 0; i < 20; i++) {
+                const p = new Particle();
+                p.x = x;
+                p.y = y;
+                p.speedX = (Math.random() - 0.5) * 20;
+                p.speedY = (Math.random() - 0.5) * 20;
+                p.hue = Math.random() * 60 + 300; // pinks and cyans
+                particles.push(p);
+            }
+            
+            setTimeout(() => burst.remove(), 1000);
+        }
+        
+        // Hide tap hint after first tap
+        let tapped = false;
+        document.addEventListener('click', () => {
+            if (!tapped) {
+                tapped = true;
+                document.getElementById('tapHint').style.display = 'none';
+            }
+        });
+        
+        // Animation loop
+        function animate() {
+            ctx.fillStyle = 'rgba(10, 10, 15, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+            
+            particles.forEach(p => {
+                // Attract to mouse
+                if (mouse.active && mouse.x) {
+                    const dx = mouse.x - p.x;
+                    const dy = mouse.y - p.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 200) {
+                        p.speedX += dx / dist * 0.1;
+                        p.speedY += dy / dist * 0.1;
+                    }
+                }
+                
+                p.update();
+                p.draw();
+            });
+            
+            // Draw connections
+            particles.forEach((p1, i) => {
+                particles.slice(i + 1).forEach(p2 => {
+                    const dx = p1.x - p2.x;
+                    const dy = p1.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(0, 245, 255, ${(1 - dist / 100) * 0.1})`;
+                        ctx.stroke();
+                    }
+                });
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+        
+        // Generate floating particles in DOM
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            p.style.animationDelay = (Math.random() * 10) + 's';
+            p.style.background = Math.random() > 0.5 ? 'var(--primary)' : 'var(--secondary)';
+            particlesContainer.appendChild(p);
+        }
+        
+        // Gyroscope on mobile
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener('deviceorientation', (e) => {
+                const tiltX = e.gamma || 0;
+                const tiltY = e.beta || 0;
+                document.querySelector('.grid').style.transform = 
+                    `perspective(500px) rotateX(${60 + tiltY}deg) rotateY(${tiltX}deg)`;
+            });
+        }
+    </script>
+</body>
+</html>
